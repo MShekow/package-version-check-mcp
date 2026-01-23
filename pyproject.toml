@@ -1,0 +1,27 @@
+[project]
+name = "package-version-check-mcp"
+version = "0.1.0"
+description = "A MCP server that returns the current, up-to-date version of packages you use as dependencies in a variety of ecosystems, such as Python, NPM, Go, or GitHub Actions"
+authors = [
+    {name = "Marius Shekow"}
+]
+license = {text = "Apache-2.0"}
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "fastmcp==2.14.4"
+]
+
+[tool.poetry]
+package-mode = true
+packages = [{include = "package-version-check-mcp", from = "src"}]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.0.2"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
