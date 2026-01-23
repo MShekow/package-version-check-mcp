@@ -8,3 +8,4 @@ When given a task, follow these guidelines:
 - Follow best practices for Python development
 - Always use poetry for dependency management, by invoking `.poetry/bin/poetry` commands (because Poetry is installed into its own venv at `.poetry`)
 - Use Context7 MCP with the "FastMCP" library documentation for reference
+- Read README.md to understand project setup and scope

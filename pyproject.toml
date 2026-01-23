@@ -9,17 +9,26 @@ license = {text = "Apache-2.0"}
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
 dependencies = [
-    "fastmcp==2.14.4"
+    "fastmcp==2.14.4",
+    "httpx==0.28.1"
 ]
+
+[project.scripts]
+package-version-check-mcp = "package_version_check_mcp.main:main"
 
 [tool.poetry]
 package-mode = true
-packages = [{include = "package-version-check-mcp", from = "src"}]
+packages = [{include = "package_version_check_mcp", from = "src"}]
 
 [project.optional-dependencies]
 dev = [
-    "pytest==9.0.2"
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0"
 ]
+
+[tool.pytest.ini_options]
+# This eliminates the need to decorate every async test with @pytest.mark.asyncio
+asyncio_mode = "auto"
 
 
 [build-system]

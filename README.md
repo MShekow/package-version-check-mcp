@@ -1,6 +1,62 @@
 # package-version-check-mcp
 A MCP server that returns the current, up-to-date version of packages you use as dependencies in a variety of ecosystems, such as Python, NPM, Go, or GitHub Actions
 
+## Features
+
+Currently supported ecosystems:
+- **npm** - Node.js packages from the npm registry
+- **pypi** - Python packages from PyPI
+
+## Usage
+
+### Running the Server
+
+To run the MCP server:
+
+```bash
+.poetry/bin/poetry run python -m package_version_check_mcp.main
+```
+
+Or if you have the `.venv` activated:
+
+```bash
+python src/package_version_check_mcp/main.py
+```
+
+### Available Tools
+
+#### `get_latest_versions`
+
+Fetches the latest versions of packages from various ecosystems.
+
+**Input:**
+- `packages`: Array of package specifications, where each item contains:
+  - `ecosystem` (required): Either "npm" or "pypi"
+  - `package_name` (required): The name of the package (e.g., "express", "requests")
+  - `version` (optional): Version constraint (not currently used for filtering)
+
+**Output:**
+- `result`: Array of successful lookups with:
+  - `ecosystem`: The package ecosystem (as provided)
+  - `package_name`: The package name (as provided)
+  - `latest_version`: The latest version number (e.g., "1.2.4")
+  - `digest`: (optional) Package digest/hash if available
+  - `published_on`: (optional) Publication date if available
+- `lookup_errors`: Array of errors with:
+  - `ecosystem`: The package ecosystem (as provided)
+  - `package_name`: The package name (as provided)
+  - `error`: Description of the error
+
+**Example:**
+```json
+{
+  "packages": [
+    {"ecosystem": "npm", "package_name": "express"},
+    {"ecosystem": "pypi", "package_name": "requests"}
+  ]
+}
+```
+
 ## Development
 
 ### Package management with Poetry
