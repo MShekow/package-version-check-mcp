@@ -482,7 +482,7 @@ async def get_github_action_versions_and_args(
 
 def main():
     """Main entry point for the MCP server."""
-    mcp.run(transport="sse", host="0.0.0.0", port=8000)
+    mcp.run(transport="http", host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":

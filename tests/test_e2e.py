@@ -69,9 +69,9 @@ def docker_container_base_url() -> Generator[str, None, None]:
 @pytest.fixture
 async def mcp_client(docker_container_base_url: str) -> AsyncGenerator[Client, None]:
     """Create a FastMCP client connected to the Docker container."""
-    sse_url = f"{docker_container_base_url}/sse"
+    mcp_url = f"{docker_container_base_url}/mcp"
 
-    async with Client(sse_url) as client:
+    async with Client(mcp_url) as client:
         yield client
 
 
