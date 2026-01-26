@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: package-version-check-mcp
+    runtime: python
+    plan: free
+    autoDeployTrigger: commit
+    buildCommand: poetry install
+    startCommand: python src/package_version_check_mcp/main.py
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: PYTHON_VERSION
+        # renovate: datasource=docker name=python
+        value: "3.14.2"
+      - key: POETRY_VERSION
+        # renovate: datasource=pypi name=poetry
+        value: "2.3.1"
