@@ -34,5 +34,5 @@ jobs:
           python -m venv .venv
           python -m venv .poetry
           ./.poetry/bin/pip install poetry
-          ./.poetry/bin/poetry install
+          ./.poetry/bin/poetry install --all-extras
           ./.poetry/bin/poetry run pytest
