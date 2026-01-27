@@ -5,14 +5,26 @@ description = "A MCP server that returns the current, up-to-date version of pack
 authors = [
     {name = "Marius Shekow"}
 ]
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 readme = "README.md"
 requires-python = ">=3.12,<4.0"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
     "fastmcp==2.14.4",
     "httpx==0.28.1",
     "pyyaml==6.0.3"
 ]
+
+[project.urls]
+Homepage = "https://github.com/MShekow/package-version-check-mcp"
+Repository = "https://github.com/MShekow/package-version-check-mcp"
+Issues = "https://github.com/MShekow/package-version-check-mcp/issues"
 
 [project.scripts]
 package-version-check-mcp = "package_version_check_mcp.main:main"

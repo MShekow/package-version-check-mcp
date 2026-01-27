@@ -1,0 +1,133 @@
+name: CI-CD
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Update version in pyproject.toml for tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          cat pyproject.toml | grep version
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Login to Docker Hub  # to be able to access Docker Hardened Images (dhi.io)
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - name: Build Docker image
+        run: docker build -t package-version-check-mcp .
+
+      - name: Run pytest
+        run: |
+          python -m venv .venv
+          python -m venv .poetry
+          ./.poetry/bin/pip install poetry
+          ./.poetry/bin/poetry install --all-extras
+          export GITHUB_PAT=${{ secrets.GH_READONLY_PAT_NO_SCOPES }}
+          ./.poetry/bin/poetry run pytest
+
+      - name: Build distribution and upload artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          ./.poetry/bin/poetry build
+
+      - name: Upload distribution artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v6
+        with:
+          name: dist
+          path: dist/
+
+  cd:
+    runs-on: ubuntu-latest
+    needs: ci
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    environment:  # for TestPyPI, change name to testpypi and in url, add "test." at the front
+      name: pypi
+      url: https://pypi.org/p/package-version-check-mcp
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download distribution artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # For TestPyPI, add: with: repository-url: https://test.pypi.org/legacy/
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          cache-image: false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        id: build-and-push
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Sign image
+        run: |
+          cosign sign --yes --recursive ghcr.io/${{ github.repository }}/${{ steps.build-and-push.outputs.digest }}
