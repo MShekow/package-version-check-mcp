@@ -130,4 +130,4 @@ jobs:
 
       - name: Sign image
         run: |
-          cosign sign --yes --recursive ghcr.io/${{ github.repository }}/${{ steps.build-and-push.outputs.digest }}
+          cosign sign --yes --recursive ghcr.io/${{ github.repository }}@${{ steps.build-and-push.outputs.digest }}
