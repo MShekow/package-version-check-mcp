@@ -1,7 +1,9 @@
-FROM golang:1-alpine AS lprobe
+FROM --platform=$BUILDPLATFORM golang:1-alpine AS lprobe
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /build
 ADD https://github.com/MShekow/local-health-check.git#main .
-RUN CGO_ENABLED=0 go build -o lprobe .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o lprobe .
 
 FROM dhi.io/python:3.14.2-dev AS build-stage
 
