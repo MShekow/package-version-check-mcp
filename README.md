@@ -54,6 +54,8 @@ Once you've added the MCP server, you need to:
    - "Check the latest package versions using the MCP tools"
    - "Use get_latest_versions to find the current version"
 
+In case you forgot to add this prompt and your agent generated code with _outdated_ versions, you can just ask your agent to update the versions afterwards (e.g., "Update the dependencies you just added to the latest version via MCP").
+
 ### Available Tools
 
 #### `get_latest_versions`
