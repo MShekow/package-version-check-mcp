@@ -11,11 +11,8 @@ import pytest
 from fastmcp import Client
 from testcontainers.core.container import DockerContainer
 
-from package_version_check_mcp.main import (
-    Ecosystem,
-    PackageVersionRequest,
-    GetLatestVersionsResponse,
-)
+from package_version_check_mcp.get_latest_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
+    GetLatestVersionsResponse
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +32,7 @@ def docker_container_base_url() -> Generator[str, None, None]:
 
     # Build the Docker image using subprocess
     build_cmd = ["docker", "build", "-t", image_tag, str(project_root)]
-    result = subprocess.run(
+    subprocess.run(
         build_cmd,
         capture_output=True,
         text=True,

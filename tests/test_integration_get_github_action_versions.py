@@ -5,8 +5,8 @@ from fastmcp import Client
 
 from package_version_check_mcp.main import (
     mcp,
-    GetGitHubActionVersionsResponse,
 )
+from package_version_check_mcp.get_github_actions_pkg.structs import GetGitHubActionVersionsResponse
 
 
 @pytest.fixture

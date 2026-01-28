@@ -27,6 +27,7 @@ FROM dhi.io/python:3.14.2 AS runtime-stage
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app/src:$PYTHONPATH"
 
 COPY --from=build-stage /app /app
 

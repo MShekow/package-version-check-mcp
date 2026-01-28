@@ -5,10 +5,9 @@ from fastmcp import Client
 
 from package_version_check_mcp.main import (
     mcp,
-    Ecosystem,
-    PackageVersionRequest,
-    GetLatestVersionsResponse,
 )
+from package_version_check_mcp.get_latest_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
+    GetLatestVersionsResponse
 
 
 @pytest.fixture
