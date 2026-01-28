@@ -17,13 +17,17 @@ async def mcp_client():
         yield client
 
 
-async def test_get_latest_versions_npm_success(mcp_client: Client):
-    """Test fetching a valid NPM package version."""
+@pytest.mark.parametrize("ecosystem,package_name", [
+    (Ecosystem.NPM, "express"),
+    (Ecosystem.PYPI, "requests"),
+])
+async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
+    """Test fetching valid package versions from different ecosystems."""
     result = await mcp_client.call_tool(
         name="get_latest_versions",
         arguments={
             "packages": [
-                PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express")
+                PackageVersionRequest(ecosystem=ecosystem, package_name=package_name)
             ]
         }
     )
@@ -31,47 +35,23 @@ async def test_get_latest_versions_npm_success(mcp_client: Client):
     assert result.structured_content is not None
     response = GetLatestVersionsResponse.model_validate(result.structured_content)
     assert len(response.result) == 1
-    assert response.result[0].ecosystem == "npm"
-    assert response.result[0].package_name == "express"
+    assert response.result[0].ecosystem == ecosystem.value
+    assert response.result[0].package_name == package_name
     assert response.result[0].latest_version != ""
-    # Express should have a version like "4.x.x" or "5.x.x"
     assert "." in response.result[0].latest_version
-    # Should have a publication date
     assert response.result[0].published_on is not None
     assert len(response.lookup_errors) == 0
 
 
-async def test_get_latest_versions_pypi_success(mcp_client: Client):
-    """Test fetching a valid PyPI package version."""
+@pytest.mark.parametrize("ecosystem", [Ecosystem.NPM, Ecosystem.PYPI])
+async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem):
+    """Test fetching non-existent packages from different ecosystems."""
+    package_name = "this-package-definitely-does-not-exist-12345678"
     result = await mcp_client.call_tool(
         name="get_latest_versions",
         arguments={
             "packages": [
-                PackageVersionRequest(ecosystem=Ecosystem.PYPI, package_name="requests")
-            ]
-        }
-    )
-
-    assert result.structured_content is not None
-    response = GetLatestVersionsResponse.model_validate(result.structured_content)
-    assert len(response.result) == 1
-    assert response.result[0].ecosystem == "pypi"
-    assert response.result[0].package_name == "requests"
-    assert response.result[0].latest_version != ""
-    # Requests should have a version with dots
-    assert "." in response.result[0].latest_version
-    # Should have a publication date
-    assert response.result[0].published_on is not None
-    assert len(response.lookup_errors) == 0
-
-
-async def test_get_latest_versions_npm_not_found(mcp_client: Client):
-    """Test fetching a non-existent NPM package."""
-    result = await mcp_client.call_tool(
-        name="get_latest_versions",
-        arguments={
-            "packages": [
-                PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="this-package-definitely-does-not-exist-12345678")
+                PackageVersionRequest(ecosystem=ecosystem, package_name=package_name)
             ]
         }
     )
@@ -80,28 +60,8 @@ async def test_get_latest_versions_npm_not_found(mcp_client: Client):
     response = GetLatestVersionsResponse.model_validate(result.structured_content)
     assert len(response.result) == 0
     assert len(response.lookup_errors) == 1
-    assert response.lookup_errors[0].ecosystem == "npm"
-    assert response.lookup_errors[0].package_name == "this-package-definitely-does-not-exist-12345678"
-    assert "not found" in response.lookup_errors[0].error.lower()
-
-
-async def test_get_latest_versions_pypi_not_found(mcp_client: Client):
-    """Test fetching a non-existent PyPI package."""
-    result = await mcp_client.call_tool(
-        name="get_latest_versions",
-        arguments={
-            "packages": [
-                PackageVersionRequest(ecosystem=Ecosystem.PYPI, package_name="this-package-definitely-does-not-exist-12345678")
-            ]
-        }
-    )
-
-    assert result.structured_content is not None
-    response = GetLatestVersionsResponse.model_validate(result.structured_content)
-    assert len(response.result) == 0
-    assert len(response.lookup_errors) == 1
-    assert response.lookup_errors[0].ecosystem == "pypi"
-    assert response.lookup_errors[0].package_name == "this-package-definitely-does-not-exist-12345678"
+    assert response.lookup_errors[0].ecosystem == ecosystem.value
+    assert response.lookup_errors[0].package_name == package_name
     assert "not found" in response.lookup_errors[0].error.lower()
 
 
