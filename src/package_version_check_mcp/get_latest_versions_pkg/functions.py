@@ -223,8 +223,6 @@ def determine_latest_image_tag(available_tags: list[str], tag_hint: Optional[str
     Get the latest compatible version from available Docker tags.
 
     Compatibility is determined by matching suffixes (e.g., '-alpine').
-    Unlike Renovate's docker versioning, this always returns the most specific
-    version available (e.g., "1.2" can upgrade to "1.4.3").
 
     Args:
         available_tags: List of available version tags
@@ -270,6 +268,15 @@ def determine_latest_image_tag(available_tags: list[str], tag_hint: Optional[str
 
         version_str = match.group('version')
         prerelease = match.group('prerelease')
+
+        # Ignore tags where version is only a large number (>=1000) without dots
+        # This filters out date-based tags like 20260202, 20250115, etc.
+        if '.' not in version_str:
+            try:
+                if int(version_str) >= 1000:
+                    return None
+            except ValueError:
+                pass
 
         # Split version into numeric parts
         release = [int(x) for x in version_str.split('.')]

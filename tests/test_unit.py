@@ -90,6 +90,41 @@ from package_version_check_mcp.get_latest_versions_pkg.functions import determin
             '2.0.0b1',
             "No hint with only prereleases - return latest prerelease"
         ),
+        # Test 13: Large number tags ignored (date-based tags like 20260202)
+        (
+            ['1.2.3', '20260202', '1.3.0', '20250115', '2.0.0'],
+            '1.2',
+            '2.0.0',
+            "Large number tags ignored - filter out date-based tags like 20260202"
+        ),
+        # Test 14: Large number tags only
+        (
+            ['20260202', '20250115', '1000', '20240101'],
+            None,
+            None,
+            "Large number tags only - should return None when all tags are large numbers"
+        ),
+        # Test 15: Small numbers without dots are allowed
+        (
+            ['1', '2', '10', '100', '999'],
+            None,
+            '999',
+            "Small numbers without dots allowed - numbers <1000 are valid"
+        ),
+        # Test 16: Large numbers with dots are allowed
+        (
+            ['2024.1.15', '2025.1.15', '2026.2.2'],
+            None,
+            '2026.2.2',
+            "Large numbers with dots allowed - semantic versions with large numbers are valid"
+        ),
+        # Test 17: Mixed large numbers with and without dots
+        (
+            ['1.2.3', '20260202', '2026.2.2', '1001', '2.0.0'],
+            None,
+            '2026.2.2',
+            "Mixed large numbers - prefer valid semver over large numbers without dots"
+        ),
     ],
 )
 def test_determine_latest_image_tag(available_tags, tag_hint, expected_result, test_description):
