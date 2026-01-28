@@ -32,21 +32,23 @@ async def get_latest_versions(
 ) -> GetLatestVersionsResponse:
     """Get the latest versions of packages from various ecosystems.
 
-    This tool fetches the latest version information for packages from NPM and PyPI.
+    This tool fetches the latest version information for packages from NPM, PyPI, and Docker.
     It returns both successful lookups and any errors that occurred.
 
     Args:
         packages: A list of package version requests with:
-            - ecosystem: "npm" or "pypi"
+            - ecosystem: "npm", "pypi", or "docker"
             - package_name: The name of the package (e.g., "express", "requests")
-            - version: (optional) A version constraint (currently not used for filtering)
+              For Docker, this must be fully qualified (e.g., "index.docker.io/library/busybox")
+            - version: (optional) For Docker, used as a tag compatibility hint (e.g., "1.2-alpine")
+              to find the latest tag matching the same suffix pattern. For NPM/PyPI, not used.
 
     Returns:
         GetLatestVersionsResponse containing:
             - result: List of successful package version lookups with:
                 - ecosystem: The package ecosystem (as provided)
                 - package_name: The package name (as provided)
-                - latest_version: The latest version number (e.g., "1.2.4")
+                - latest_version: The latest version number (e.g., "1.2.4") or Docker tag
                 - digest: (optional) Package digest/hash if available
                 - published_on: (optional) Publication date if available
             - lookup_errors: List of errors that occurred during lookup with:
@@ -57,7 +59,8 @@ async def get_latest_versions(
     Example:
         >>> await get_latest_versions([
         ...     PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express"),
-        ...     PackageVersionRequest(ecosystem=Ecosystem.PYPI, package_name="requests")
+        ...     PackageVersionRequest(ecosystem=Ecosystem.PYPI, package_name="requests"),
+        ...     PackageVersionRequest(ecosystem=Ecosystem.DOCKER, package_name="index.docker.io/library/alpine", version="3.19-alpine")
         ... ])
     """
     # Fetch all package versions concurrently

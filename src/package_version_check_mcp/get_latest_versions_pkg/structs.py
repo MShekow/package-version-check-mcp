@@ -9,6 +9,7 @@ class Ecosystem(str, Enum):
 
     NPM = "npm"
     PYPI = "pypi"
+    DOCKER = "docker"
 
 
 class PackageVersionRequest(BaseModel):

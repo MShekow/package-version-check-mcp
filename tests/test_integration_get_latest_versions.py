@@ -20,6 +20,7 @@ async def mcp_client():
 @pytest.mark.parametrize("ecosystem,package_name", [
     (Ecosystem.NPM, "express"),
     (Ecosystem.PYPI, "requests"),
+    (Ecosystem.DOCKER, "index.docker.io/library/busybox"),
 ])
 async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
     """Test fetching valid package versions from different ecosystems."""
@@ -37,9 +38,12 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
     assert len(response.result) == 1
     assert response.result[0].ecosystem == ecosystem.value
     assert response.result[0].package_name == package_name
-    assert response.result[0].latest_version != ""
     assert "." in response.result[0].latest_version
-    assert response.result[0].published_on is not None
+
+    if ecosystem is Ecosystem.DOCKER:
+        assert response.result[0].digest is not None
+        assert response.result[0].digest.startswith("sha256:")
+
     assert len(response.lookup_errors) == 0
 
 
@@ -133,3 +137,37 @@ async def test_get_latest_versions_multiple_packages(mcp_client: Client):
     for pkg in response.result:
         assert pkg.latest_version != ""
         assert "." in pkg.latest_version
+
+
+@pytest.mark.parametrize("package_name,version_hint,expected_suffix", [
+    ("index.docker.io/library/busybox", "1.36-musl", "musl"),
+    ("index.docker.io/library/busybox", "1.36-glibc", "glibc"),
+    ("index.docker.io/library/memcached", "1-bookworm", "bookworm"),
+])
+async def test_get_latest_versions_docker_with_tag_hint(mcp_client: Client, package_name, version_hint, expected_suffix):
+    """Test fetching Docker image versions with tag compatibility hint."""
+    result = await mcp_client.call_tool(
+        name="get_latest_versions",
+        arguments={
+            "packages": [
+                PackageVersionRequest(
+                    ecosystem=Ecosystem.DOCKER,
+                    package_name=package_name,
+                    version=version_hint
+                )
+            ]
+        }
+    )
+
+    assert result.structured_content is not None
+    response = GetLatestVersionsResponse.model_validate(result.structured_content)
+    assert len(response.result) == 1
+    assert response.result[0].ecosystem == "docker"
+    assert response.result[0].package_name == package_name
+    assert "." in response.result[0].latest_version
+    # The returned tag should have the same suffix
+    assert expected_suffix in response.result[0].latest_version.lower()
+    # Should have a digest
+    assert response.result[0].digest is not None
+    assert response.result[0].digest.startswith("sha256:")
+    assert len(response.lookup_errors) == 0

@@ -6,6 +6,7 @@ A MCP server that returns the current, up-to-date version of packages you use as
 Currently supported ecosystems:
 - **npm** - Node.js packages from the npm registry
 - **pypi** - Python packages from PyPI
+- **docker** - Docker container images from Docker registries
 - **GitHub Actions** - Actions hosted on GitHub
 
 ## Usage
@@ -64,17 +65,22 @@ Fetches the latest versions of packages from various ecosystems.
 
 **Input:**
 - `packages`: Array of package specifications, where each item contains:
-  - `ecosystem` (required): Either "npm" or "pypi"
-  - `package_name` (required): The name of the package (e.g., "express", "requests")
-  - `version` (optional): Version constraint (not currently used for filtering)
+  - `ecosystem` (required): Either "npm", "pypi", or "docker"
+  - `package_name` (required): The name of the package
+    - For npm: package name (e.g., "express")
+    - For pypi: package name (e.g., "requests")
+    - For docker: fully qualified image name including registry and namespace (e.g., "index.docker.io/library/busybox")
+  - `version` (optional):
+    - For docker: tag compatibility hint (e.g., "1.36-alpine") to find the latest tag matching the same suffix pattern. If omitted, returns the latest semantic version tag.
+    - For npm/pypi: not currently used
 
 **Output:**
 - `result`: Array of successful lookups with:
   - `ecosystem`: The package ecosystem (as provided)
   - `package_name`: The package name (as provided)
-  - `latest_version`: The latest version number (e.g., "1.2.4")
-  - `digest`: (optional) Package digest/hash if available
-  - `published_on`: (optional) Publication date if available
+  - `latest_version`: The latest version number (e.g., "1.2.4") or Docker tag
+  - `digest`: (optional) Package digest/hash if available. For Docker, this is the manifest digest (sha256).
+  - `published_on`: (optional) Publication date if available (not available for Docker)
 - `lookup_errors`: Array of errors with:
   - `ecosystem`: The package ecosystem (as provided)
   - `package_name`: The package name (as provided)
@@ -85,7 +91,8 @@ Fetches the latest versions of packages from various ecosystems.
 {
   "packages": [
     {"ecosystem": "npm", "package_name": "express"},
-    {"ecosystem": "pypi", "package_name": "requests"}
+    {"ecosystem": "pypi", "package_name": "requests"},
+    {"ecosystem": "docker", "package_name": "index.docker.io/library/alpine", "version": "3.19-alpine"}
   ]
 }
 ```
