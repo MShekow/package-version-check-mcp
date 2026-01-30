@@ -139,6 +139,17 @@ Fetches the latest versions and metadata for GitHub Actions hosted on github.com
 
 ## Development
 
+### Prerequisites
+
+For Helm ChartMuseum support, the server requires `yq` (a fast YAML processor) to be installed:
+
+- **Linux/macOS**: Download from https://github.com/mikefarah/yq/releases
+- **Fedora/RHEL**: `sudo dnf install yq`
+- **Ubuntu/Debian**: `sudo snap install yq` or download binary from releases
+- **macOS**: `brew install yq`
+
+Without `yq`, Helm ChartMuseum repositories will not work (OCI Helm charts will still work).
+
 ### Running the Server Manually (For Development)
 
 If you're developing or testing the MCP server locally, you can run it directly.

@@ -5,7 +5,10 @@ import urllib.parse
 from yarl import URL
 import re
 from typing import Optional
-import yaml
+import json
+import asyncio
+import tempfile
+import os
 
 from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 
@@ -645,6 +648,8 @@ async def fetch_helm_chartmuseum_version(
 ) -> PackageVersionResult:
     """Fetch the latest version of a Helm chart from a ChartMuseum-compatible registry.
 
+    Uses yq (fast Go-based YAML processor) to extract only the needed chart from large index.yaml files.
+
     Args:
         registry_url: The base URL of the ChartMuseum registry
         chart_name: The name of the chart
@@ -659,20 +664,25 @@ async def fetch_helm_chartmuseum_version(
     # ChartMuseum serves index.yaml at the registry root
     index_url = f"{registry_url}/index.yaml"
 
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
-        response = await client.get(index_url)
-        response.raise_for_status()
+    # Stream the YAML file directly to disk to avoid loading potentially large files (20MB+)
+    # into memory
+    temp_file = None
+    try:
+        async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+            async with client.stream('GET', index_url) as response:
+                response.raise_for_status()
 
-        # Parse the YAML index
-        index_data = yaml.safe_load(response.text)
+                # Create temp file and stream response to it
+                temp_file = tempfile.NamedTemporaryFile(mode='wb', suffix='.yaml', delete=False)
+                async for chunk in response.aiter_bytes(chunk_size=8192):
+                    temp_file.write(chunk)
+                temp_file.close()
 
-        entries = index_data.get("entries", {})
-        if chart_name not in entries:
-            raise Exception(f"Chart '{chart_name}' not found in repository at {registry_url}")
+        # Use yq to extract only the specific chart (much faster than parsing entire YAML)
+        chart_versions = await _extract_helm_chart_with_yq(temp_file.name, chart_name)
 
-        chart_versions = entries[chart_name]
         if not chart_versions:
-            raise Exception(f"No versions found for chart '{chart_name}'")
+            raise Exception(f"Chart '{chart_name}' not found in repository at {registry_url}")
 
         # Filter out deprecated charts and find the latest semantic version
         latest_version = None
@@ -709,6 +719,13 @@ async def fetch_helm_chartmuseum_version(
             digest=latest_digest,
             published_on=latest_created,
         )
+    finally:
+        # Clean up temp file
+        if temp_file:
+            try:
+                os.unlink(temp_file.name)
+            except Exception:
+                pass
 
 
 async def fetch_helm_oci_version(
@@ -768,6 +785,53 @@ async def fetch_helm_oci_version(
             digest=digest,
             published_on=None,  # OCI registries don't expose this easily
         )
+
+
+async def _extract_helm_chart_with_yq(yaml_file_path: str, chart_name: str) -> list[dict]:
+    """Extract a specific chart's versions from Helm index.yaml using yq (fast Go-based tool).
+
+    This avoids parsing the entire YAML file (which can be 20MB+) by using yq to extract
+    only the specific chart we need.
+
+    Args:
+        yaml_file_path: Path to the index.yaml file on disk
+        chart_name: The name of the chart to extract
+
+    Returns:
+        List of version dictionaries for the chart
+    """
+    try:
+        # Use yq to extract just the chart we need and output as JSON
+        # yq syntax: .entries["chart-name"] -o json
+        process = await asyncio.create_subprocess_exec(
+            'yq',
+            f'.entries["{chart_name}"]',
+            '-o', 'json',
+            yaml_file_path,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+
+        stdout, _stderr = await process.communicate()
+
+        if process.returncode != 0:
+            # yq not found or error - return empty list
+            return []
+
+        # Parse the JSON output
+        result = json.loads(stdout.decode())
+
+        # yq returns null if the key doesn't exist
+        if result is None:
+            return []
+
+        return result if isinstance(result, list) else []
+
+    except FileNotFoundError:
+        # yq not installed - return empty list to trigger fallback
+        return []
+    except Exception:
+        return []
 
 
 def _parse_semver(version: str) -> tuple[list[int], str]:
