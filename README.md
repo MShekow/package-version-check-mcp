@@ -4,13 +4,15 @@ A MCP server that returns the current, up-to-date version of packages you use as
 ## Features
 
 Currently supported ecosystems:
-- **npm** - Node.js packages from the npm registry
-- **pypi** - Python packages from PyPI
-- **docker** - Docker container images from Docker registries
-- **nuget** - .NET packages from NuGet
-- **maven/gradle** - Java/Kotlin/Scala packages from Maven repositories (Maven Central, Google Maven, etc.)
-- **helm** - Helm charts from ChartMuseum repositories and OCI registries
-- **GitHub Actions** - Actions hosted on GitHub
+- Developer ecosystems:
+  - **NPM** - Node.js packages from registry.npmjs.org
+  - **PyPI** - Python packages from PyPI
+  - **NuGet** - .NET packages from NuGet
+  - **Maven / Gradle** - Java/Kotlin/Scala packages from Maven repositories (Maven Central, Google Maven, etc.)
+- DevOps ecosystems:
+  - **Docker** - Docker container images from Docker registries
+  - **Helm** - Helm charts from ChartMuseum repositories and OCI registries
+  - **GitHub Actions** - Actions hosted on GitHub.com
 
 ## Usage
 
