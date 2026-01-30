@@ -34,6 +34,9 @@ async def mcp_client():
     (Ecosystem.TerraformProvider, "hashicorp/google"),
     (Ecosystem.TerraformProvider, "registry.terraform.io/hashicorp/azurerm"),
     (Ecosystem.TerraformProvider, "registry.opentofu.org/hashicorp/random"),
+    (Ecosystem.TerraformModule, "terraform-aws-modules/vpc/aws"),
+    (Ecosystem.TerraformModule, "terraform-aws-modules/eks/aws"),
+    (Ecosystem.TerraformModule, "registry.terraform.io/Azure/network/azurerm"),
 ])
 async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
     """Test fetching valid package versions from different ecosystems."""
@@ -73,6 +76,7 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
     (Ecosystem.Helm, "https://charts.bitnami.com/bitnami/nonexistent-chart-12345"),
     (Ecosystem.Helm, "oci://ghcr.io/nonexistent-org-12345/nonexistent-chart-12345"),
     (Ecosystem.TerraformProvider, "nonexistent-namespace-12345/nonexistent-provider-12345"),
+    (Ecosystem.TerraformModule, "nonexistent-namespace-12345/nonexistent-module-12345/aws"),
 ])
 async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, package_name):
     """Test fetching non-existent packages from different ecosystems."""

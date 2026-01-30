@@ -1,5 +1,5 @@
 import pytest
-from package_version_check_mcp.get_latest_versions_pkg.functions import determine_latest_image_tag, parse_maven_package_name, parse_terraform_provider_name
+from package_version_check_mcp.get_latest_versions_pkg.functions import determine_latest_image_tag, parse_maven_package_name, parse_terraform_provider_name, parse_terraform_module_name
 
 
 @pytest.mark.parametrize(
@@ -314,3 +314,122 @@ def test_parse_terraform_provider_name_invalid(package_name, test_description):
     """Test parse_terraform_provider_name with invalid inputs."""
     with pytest.raises(ValueError):
         parse_terraform_provider_name(package_name)
+
+
+@pytest.mark.parametrize(
+    "package_name,expected_registry,expected_namespace,expected_name,expected_provider,test_description",
+    [
+        # Test 1: Simple module name (no registry)
+        (
+            "terraform-aws-modules/vpc/aws",
+            "registry.terraform.io",
+            "terraform-aws-modules",
+            "vpc",
+            "aws",
+            "Simple module name - defaults to registry.terraform.io"
+        ),
+        # Test 2: Fully qualified with registry
+        (
+            "registry.terraform.io/terraform-aws-modules/vpc/aws",
+            "registry.terraform.io",
+            "terraform-aws-modules",
+            "vpc",
+            "aws",
+            "Fully qualified - explicit Terraform Registry"
+        ),
+        # Test 3: OpenTofu registry
+        (
+            "registry.opentofu.org/terraform-aws-modules/vpc/aws",
+            "registry.opentofu.org",
+            "terraform-aws-modules",
+            "vpc",
+            "aws",
+            "OpenTofu registry - alternative registry"
+        ),
+        # Test 4: Azure module
+        (
+            "Azure/network/azurerm",
+            "registry.terraform.io",
+            "Azure",
+            "network",
+            "azurerm",
+            "Azure module - different namespace and provider"
+        ),
+        # Test 5: Custom private registry
+        (
+            "terraform.example.com/myorg/mymodule/mycloud",
+            "terraform.example.com",
+            "myorg",
+            "mymodule",
+            "mycloud",
+            "Custom private registry"
+        ),
+        # Test 6: Google Cloud module
+        (
+            "GoogleCloudPlatform/lb-http/google",
+            "registry.terraform.io",
+            "GoogleCloudPlatform",
+            "lb-http",
+            "google",
+            "Google Cloud Platform module"
+        ),
+    ],
+)
+def test_parse_terraform_module_name_success(package_name, expected_registry, expected_namespace, expected_name, expected_provider, test_description):
+    """Test parse_terraform_module_name with valid inputs."""
+    registry, namespace, module_name, provider = parse_terraform_module_name(package_name)
+    assert registry == expected_registry, f"Failed registry: {test_description}"
+    assert namespace == expected_namespace, f"Failed namespace: {test_description}"
+    assert module_name == expected_name, f"Failed module_name: {test_description}"
+    assert provider == expected_provider, f"Failed provider: {test_description}"
+
+
+@pytest.mark.parametrize(
+    "package_name,test_description",
+    [
+        # Test 1: Missing provider (only two parts)
+        (
+            "terraform-aws-modules/vpc",
+            "Missing provider - only two parts"
+        ),
+        # Test 2: Too many slashes
+        (
+            "a/b/c/d/e",
+            "Too many slashes - five parts"
+        ),
+        # Test 3: Empty namespace
+        (
+            "/vpc/aws",
+            "Empty namespace"
+        ),
+        # Test 4: Empty name
+        (
+            "terraform-aws-modules//aws",
+            "Empty module name"
+        ),
+        # Test 5: Empty provider
+        (
+            "terraform-aws-modules/vpc/",
+            "Empty provider"
+        ),
+        # Test 6: Empty package name
+        (
+            "",
+            "Empty package name"
+        ),
+        # Test 7: Only one part
+        (
+            "terraform-aws-modules",
+            "Only one part - missing name and provider"
+        ),
+        # Test 8: Fully qualified with empty parts
+        (
+            "registry.terraform.io/terraform-aws-modules//aws",
+            "Fully qualified with empty module name"
+        ),
+    ],
+)
+def test_parse_terraform_module_name_invalid(package_name, test_description):
+    """Test parse_terraform_module_name with invalid inputs."""
+    with pytest.raises(ValueError):
+        parse_terraform_module_name(package_name)

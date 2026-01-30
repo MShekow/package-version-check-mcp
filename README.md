@@ -12,8 +12,8 @@ Currently supported ecosystems:
 - DevOps ecosystems:
   - **Docker** - Docker container images from Docker registries
   - **Helm** - Helm charts from ChartMuseum repositories and OCI registries
-  - **GitHub Actions** - Actions hosted on GitHub.com
-  - **Terraform Providers** - Providers from Terraform Registry, OpenTofu Registry, or custom registries
+  - **GitHub Actions** - Actions hosted on GitHub.com, returning their current version, their inputs and outputs, and (optionally) their entire README with usage examples
+  - **Terraform _Providers_ and _Modules_** - Providers & Modules from Terraform Registry, OpenTofu Registry, or custom registries
 
 ## Usage
 
@@ -71,7 +71,7 @@ Fetches the latest versions of packages from various ecosystems.
 
 **Input:**
 - `packages`: Array of package specifications, where each item contains:
-  - `ecosystem` (required): Either "npm", "pypi", "docker", "nuget", "maven_gradle", "helm", or "terraform_provider"
+  - `ecosystem` (required): Either "npm", "pypi", "docker", "nuget", "maven_gradle", "helm", "terraform_provider", or "terraform_module"
   - `package_name` (required): The name of the package
     - For npm: package name (e.g., "express")
     - For pypi: package name (e.g., "requests")
@@ -80,10 +80,11 @@ Fetches the latest versions of packages from various ecosystems.
     - For maven_gradle: "[registry:]<groupId>:<artifactId>" format (e.g., "org.springframework:spring-core"). If registry is omitted, Maven Central is assumed.
     - For helm: Either ChartMuseum URL ("https://host/path/chart-name") or OCI reference ("oci://host/path/chart-name")
     - For terraform_provider: "[registry/]<namespace>/<type>" format (e.g., "hashicorp/aws" or "registry.terraform.io/hashicorp/aws"). If registry is omitted, registry.terraform.io is assumed. Supports alternative registries like registry.opentofu.org.
+    - For terraform_module: "[registry/]<namespace>/<name>/<provider>" format (e.g., "terraform-aws-modules/vpc/aws" or "registry.terraform.io/terraform-aws-modules/vpc/aws"). If registry is omitted, registry.terraform.io is assumed. Supports alternative registries like registry.opentofu.org.
   - `version` (optional):
     - For docker: tag compatibility hint (e.g., "1.36-alpine") to find the latest tag matching the same suffix pattern. If omitted, returns the latest semantic version tag.
     - For helm (OCI only): tag compatibility hint similar to Docker
-    - For npm/pypi/nuget/maven_gradle/helm (ChartMuseum)/terraform_provider: not currently used
+    - For npm/pypi/nuget/maven_gradle/helm (ChartMuseum)/terraform_provider/terraform_module: not currently used
 
 **Output:**
 - `result`: Array of successful lookups with:
@@ -108,7 +109,8 @@ Fetches the latest versions of packages from various ecosystems.
     {"ecosystem": "docker", "package_name": "index.docker.io/library/alpine", "version": "3.19-alpine"},
     {"ecosystem": "helm", "package_name": "https://charts.bitnami.com/bitnami/nginx"},
     {"ecosystem": "helm", "package_name": "oci://ghcr.io/argoproj/argo-helm/argo-cd"},
-    {"ecosystem": "terraform_provider", "package_name": "hashicorp/aws"}
+    {"ecosystem": "terraform_provider", "package_name": "hashicorp/aws"},
+    {"ecosystem": "terraform_module", "package_name": "terraform-aws-modules/vpc/aws"}
   ]
 }
 ```

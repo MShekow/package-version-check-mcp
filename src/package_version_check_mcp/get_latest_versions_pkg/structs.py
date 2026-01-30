@@ -14,6 +14,7 @@ class Ecosystem(str, Enum):
     MavenGradle = "maven_gradle"
     Helm = "helm"
     TerraformProvider = "terraform_provider"
+    TerraformModule = "terraform_module"
 
 
 class PackageVersionRequest(BaseModel):
