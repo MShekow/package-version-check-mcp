@@ -25,6 +25,11 @@ async def mcp_client():
     (Ecosystem.MavenGradle, "org.springframework:spring-core"),
     (Ecosystem.MavenGradle, "com.google.guava:guava"),
     (Ecosystem.MavenGradle, "org.apache.commons:commons-lang3"),
+    (Ecosystem.Helm, "https://charts.bitnami.com/bitnami/nginx"),
+    (Ecosystem.Helm, "https://charts.bitnami.com/bitnami/redis"),
+    (Ecosystem.Helm, "https://prometheus-community.github.io/helm-charts/prometheus"),
+    (Ecosystem.Helm, "oci://ghcr.io/argoproj/argo-helm/argo-cd"),
+    (Ecosystem.Helm, "oci://registry-1.docker.io/bitnamicharts/nginx"),
 ])
 async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
     """Test fetching valid package versions from different ecosystems."""
@@ -61,6 +66,8 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
     (Ecosystem.PyPI, "this-package-definitely-does-not-exist-12345678"),
     (Ecosystem.NuGet, "this-package-definitely-does-not-exist-12345678"),
     (Ecosystem.MavenGradle, "org.nonexistent:this-package-definitely-does-not-exist-12345678"),
+    (Ecosystem.Helm, "https://charts.bitnami.com/bitnami/nonexistent-chart-12345"),
+    (Ecosystem.Helm, "oci://ghcr.io/nonexistent-org-12345/nonexistent-chart-12345"),
 ])
 async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, package_name):
     """Test fetching non-existent packages from different ecosystems."""
@@ -79,7 +86,9 @@ async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, pack
     assert len(response.lookup_errors) == 1
     assert response.lookup_errors[0].ecosystem == ecosystem.value
     assert response.lookup_errors[0].package_name == package_name
-    assert "not found" in response.lookup_errors[0].error.lower()
+    # Different registries return different errors (404 Not Found, 403 Forbidden, etc.)
+    error_lower = response.lookup_errors[0].error.lower()
+    assert "not found" in error_lower or "403" in error_lower or "forbidden" in error_lower
 
 
 async def test_get_latest_versions_mixed_success_and_failure(mcp_client: Client):

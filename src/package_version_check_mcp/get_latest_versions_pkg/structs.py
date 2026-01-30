@@ -12,6 +12,7 @@ class Ecosystem(str, Enum):
     Docker = "docker"
     NuGet = "nuget"
     MavenGradle = "maven_gradle"
+    Helm = "helm"
 
 
 class PackageVersionRequest(BaseModel):

@@ -5,6 +5,7 @@ import urllib.parse
 from yarl import URL
 import re
 from typing import Optional
+import yaml
 
 from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 
@@ -78,7 +79,9 @@ async def fetch_package_version(
             return await fetch_nuget_version(request.package_name)
         elif request.ecosystem == Ecosystem.MavenGradle:
             return await fetch_maven_gradle_version(request.package_name)
-        else: # Ecosystem.PyPI:
+        elif request.ecosystem == Ecosystem.Helm:
+            return await fetch_helm_chart_version(request.package_name, request.version)
+        else:  # Ecosystem.PyPI:
             return await fetch_pypi_version(request.package_name)
     except httpx.HTTPStatusError as e:
         error_msg = f"HTTP error {e.response.status_code}: {e.response.reason_phrase}"
@@ -533,3 +536,298 @@ def determine_latest_image_tag(available_tags: list[str], tag_hint: Optional[str
     # Sort and return the latest compatible version
     compatible.sort(key=version_sort_key)
     return compatible[-1]['original']
+
+
+def parse_helm_chart_name(package_name: str) -> tuple[str, str, str]:
+    """Parse a Helm chart name into its components.
+
+    Supports two formats:
+    1. ChartMuseum URL: "https://host/path/chart-name"
+    2. OCI reference: "oci://host/path/chart-name"
+
+    Args:
+        package_name: The Helm chart reference
+
+    Returns:
+        A tuple of (registry_type, registry_url, chart_name)
+        - registry_type: Either "chartmuseum" or "oci"
+        - registry_url: The base URL for the registry (without chart name)
+        - chart_name: The name of the chart
+
+    Raises:
+        ValueError: If the chart name format is invalid
+    """
+    if package_name.startswith("oci://"):
+        # OCI format: oci://host/path/chart-name
+        rest = package_name[6:]  # Remove "oci://"
+        if "/" not in rest:
+            raise ValueError(
+                f"Invalid Helm OCI chart reference: '{package_name}'. "
+                "Expected format: 'oci://host/path/chart-name'"
+            )
+        # Split to get registry and chart path
+        last_slash = rest.rfind("/")
+        registry_url = rest[:last_slash]
+        chart_name = rest[last_slash + 1:]
+
+        if not registry_url or not chart_name:
+            raise ValueError(
+                f"Invalid Helm OCI chart reference: '{package_name}'. "
+                "Expected format: 'oci://host/path/chart-name'"
+            )
+
+        return "oci", registry_url, chart_name
+
+    elif package_name.startswith("https://") or package_name.startswith("http://"):
+        # ChartMuseum format: https://host/path/chart-name
+        # We need to extract chart name from the end of the URL
+        parsed = urllib.parse.urlparse(package_name)
+        path = parsed.path.rstrip("/")
+
+        if not path or "/" not in path:
+            raise ValueError(
+                f"Invalid Helm ChartMuseum URL: '{package_name}'. "
+                "Expected format: 'https://host/path/chart-name'"
+            )
+
+        # Extract chart name from the last segment
+        last_slash = path.rfind("/")
+        chart_name = path[last_slash + 1:]
+        base_path = path[:last_slash]
+
+        if not chart_name:
+            raise ValueError(
+                f"Invalid Helm ChartMuseum URL: '{package_name}'. "
+                "Expected format: 'https://host/path/chart-name'"
+            )
+
+        # Reconstruct the base registry URL
+        registry_url = f"{parsed.scheme}://{parsed.netloc}{base_path}"
+
+        return "chartmuseum", registry_url, chart_name
+
+    else:
+        raise ValueError(
+            f"Invalid Helm chart reference: '{package_name}'. "
+            "Expected format: 'https://host/path/chart-name' (ChartMuseum) or 'oci://host/path/chart-name' (OCI)"
+        )
+
+
+async def fetch_helm_chart_version(
+    package_name: str, version_hint: Optional[str] = None
+) -> PackageVersionResult:
+    """Fetch the latest version of a Helm chart.
+
+    Supports both ChartMuseum (https://) and OCI (oci://) registries.
+
+    Args:
+        package_name: The Helm chart reference in one of these formats:
+            - ChartMuseum: "https://host/path/chart-name"
+            - OCI: "oci://host/path/chart-name"
+        version_hint: Optional version hint for compatibility matching
+
+    Returns:
+        PackageVersionResult with the latest version information
+
+    Raises:
+        Exception: If the chart cannot be found or fetched
+    """
+    registry_type, registry_url, chart_name = parse_helm_chart_name(package_name)
+
+    if registry_type == "oci":
+        return await fetch_helm_oci_version(registry_url, chart_name, package_name, version_hint)
+    else:
+        return await fetch_helm_chartmuseum_version(registry_url, chart_name, package_name)
+
+
+async def fetch_helm_chartmuseum_version(
+    registry_url: str, chart_name: str, original_package_name: str
+) -> PackageVersionResult:
+    """Fetch the latest version of a Helm chart from a ChartMuseum-compatible registry.
+
+    Args:
+        registry_url: The base URL of the ChartMuseum registry
+        chart_name: The name of the chart
+        original_package_name: The original package name for the result
+
+    Returns:
+        PackageVersionResult with the latest version information
+
+    Raises:
+        Exception: If the chart cannot be found or fetched
+    """
+    # ChartMuseum serves index.yaml at the registry root
+    index_url = f"{registry_url}/index.yaml"
+
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+        response = await client.get(index_url)
+        response.raise_for_status()
+
+        # Parse the YAML index
+        index_data = yaml.safe_load(response.text)
+
+        entries = index_data.get("entries", {})
+        if chart_name not in entries:
+            raise Exception(f"Chart '{chart_name}' not found in repository at {registry_url}")
+
+        chart_versions = entries[chart_name]
+        if not chart_versions:
+            raise Exception(f"No versions found for chart '{chart_name}'")
+
+        # Filter out deprecated charts and find the latest semantic version
+        latest_version = None
+        latest_digest = None
+        latest_created = None
+
+        for version_entry in chart_versions:
+            # Skip deprecated charts
+            if version_entry.get("deprecated", False):
+                continue
+
+            version = version_entry.get("version")
+            if not version:
+                continue
+
+            # Skip prerelease versions
+            _, prerelease = _parse_semver(version)
+            if prerelease:
+                continue
+
+            # Use semantic version comparison to find the latest
+            if latest_version is None or _compare_semver(version, latest_version) > 0:
+                latest_version = version
+                latest_digest = version_entry.get("digest")
+                latest_created = version_entry.get("created")
+
+        if not latest_version:
+            raise Exception(f"No non-deprecated stable versions found for chart '{chart_name}'")
+
+        return PackageVersionResult(
+            ecosystem="helm",
+            package_name=original_package_name,
+            latest_version=latest_version,
+            digest=latest_digest,
+            published_on=latest_created,
+        )
+
+
+async def fetch_helm_oci_version(
+    registry_url: str, chart_name: str, original_package_name: str, version_hint: Optional[str] = None
+) -> PackageVersionResult:
+    """Fetch the latest version of a Helm chart from an OCI registry.
+
+    Reuses the Docker registry client to query OCI registries.
+
+    Args:
+        registry_url: The registry host and path (without oci:// prefix)
+        chart_name: The name of the chart
+        original_package_name: The original package name for the result
+        version_hint: Optional version hint for compatibility matching
+
+    Returns:
+        PackageVersionResult with the latest version information
+
+    Raises:
+        Exception: If the chart cannot be found or fetched
+    """
+    # Construct the full OCI image reference
+    # OCI Helm charts are stored as OCI artifacts, queryable like Docker images
+    full_image_name = f"{registry_url}/{chart_name}"
+
+    # Parse as a Docker image name
+    image_name = ImageName.parse(full_image_name)
+
+    async with DockerRegistryClientAsync() as registry_client:
+        # Get all available tags (versions)
+        tags = await get_docker_image_tags(image_name, registry_client)
+
+        if not tags:
+            raise Exception(f"No versions found for Helm chart '{original_package_name}'")
+
+        # Determine the latest compatible version using the same logic as Docker
+        latest_tag = determine_latest_image_tag(tags, version_hint)
+
+        if not latest_tag:
+            hint_msg = f" compatible with '{version_hint}'" if version_hint else ""
+            raise Exception(f"No valid version tags{hint_msg} found for Helm chart '{original_package_name}'")
+
+        # Get the manifest digest for this tag
+        image_with_tag = image_name.clone()
+        image_with_tag.set_tag(latest_tag)
+
+        try:
+            manifest = await registry_client.head_manifest(image_with_tag)
+            digest = str(manifest.digest) if manifest.digest else None
+        except Exception:
+            digest = None
+
+        return PackageVersionResult(
+            ecosystem="helm",
+            package_name=original_package_name,
+            latest_version=latest_tag,
+            digest=digest,
+            published_on=None,  # OCI registries don't expose this easily
+        )
+
+
+def _parse_semver(version: str) -> tuple[list[int], str]:
+    """Parse a semantic version into numeric parts and prerelease suffix.
+
+    Args:
+        version: The version string to parse (e.g., "1.2.3", "v2.0.0-beta.1")
+
+    Returns:
+        A tuple of (numeric_parts, prerelease) where:
+        - numeric_parts: List of integers from the version (e.g., [1, 2, 3])
+        - prerelease: The prerelease suffix if any (e.g., "beta.1"), empty string otherwise
+    """
+    # Remove leading 'v' if present
+    v = version.lstrip('v')
+
+    # Split on '-' to separate version from prerelease
+    parts = v.split('-', 1)
+    version_str = parts[0]
+    prerelease = parts[1] if len(parts) > 1 else ''
+
+    # Parse numeric parts
+    numeric_parts = []
+    for part in version_str.split('.'):
+        try:
+            numeric_parts.append(int(part))
+        except ValueError:
+            # Handle non-numeric parts
+            numeric_parts.append(0)
+
+    return numeric_parts, prerelease
+
+
+def _compare_semver(version1: str, version2: str) -> int:
+    """Compare two semantic version strings.
+
+    Assumes stable versions only (no prerelease comparison).
+
+    Args:
+        version1: First version string
+        version2: Second version string
+
+    Returns:
+        -1 if version1 < version2
+        0 if version1 == version2
+        1 if version1 > version2
+    """
+    v1_parts, _ = _parse_semver(version1)
+    v2_parts, _ = _parse_semver(version2)
+
+    # Pad to same length
+    max_len = max(len(v1_parts), len(v2_parts))
+    v1_parts.extend([0] * (max_len - len(v1_parts)))
+    v2_parts.extend([0] * (max_len - len(v2_parts)))
+
+    # Compare numeric parts
+    for p1, p2 in zip(v1_parts, v2_parts):
+        if p1 < p2:
+            return -1
+        if p1 > p2:
+            return 1
+
+    return 0

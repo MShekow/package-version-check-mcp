@@ -9,6 +9,7 @@ Currently supported ecosystems:
 - **docker** - Docker container images from Docker registries
 - **nuget** - .NET packages from NuGet
 - **maven/gradle** - Java/Kotlin/Scala packages from Maven repositories (Maven Central, Google Maven, etc.)
+- **helm** - Helm charts from ChartMuseum repositories and OCI registries
 - **GitHub Actions** - Actions hosted on GitHub
 
 ## Usage
@@ -67,16 +68,18 @@ Fetches the latest versions of packages from various ecosystems.
 
 **Input:**
 - `packages`: Array of package specifications, where each item contains:
-  - `ecosystem` (required): Either "npm", "pypi", "docker", "nuget", or "maven_gradle"
+  - `ecosystem` (required): Either "npm", "pypi", "docker", "nuget", "maven_gradle", or "helm"
   - `package_name` (required): The name of the package
     - For npm: package name (e.g., "express")
     - For pypi: package name (e.g., "requests")
     - For docker: fully qualified image name including registry and namespace (e.g., "index.docker.io/library/busybox")
     - For nuget: package name (e.g., "Newtonsoft.Json")
     - For maven_gradle: "[registry:]<groupId>:<artifactId>" format (e.g., "org.springframework:spring-core"). If registry is omitted, Maven Central is assumed.
+    - For helm: Either ChartMuseum URL ("https://host/path/chart-name") or OCI reference ("oci://host/path/chart-name")
   - `version` (optional):
     - For docker: tag compatibility hint (e.g., "1.36-alpine") to find the latest tag matching the same suffix pattern. If omitted, returns the latest semantic version tag.
-    - For npm/pypi/nuget/maven_gradle: not currently used
+    - For helm (OCI only): tag compatibility hint similar to Docker
+    - For npm/pypi/nuget/maven_gradle/helm (ChartMuseum): not currently used
 
 **Output:**
 - `result`: Array of successful lookups with:
@@ -98,7 +101,9 @@ Fetches the latest versions of packages from various ecosystems.
     {"ecosystem": "pypi", "package_name": "requests"},
     {"ecosystem": "nuget", "package_name": "Newtonsoft.Json"},
     {"ecosystem": "maven_gradle", "package_name": "org.springframework:spring-core"},
-    {"ecosystem": "docker", "package_name": "index.docker.io/library/alpine", "version": "3.19-alpine"}
+    {"ecosystem": "docker", "package_name": "index.docker.io/library/alpine", "version": "3.19-alpine"},
+    {"ecosystem": "helm", "package_name": "https://charts.bitnami.com/bitnami/nginx"},
+    {"ecosystem": "helm", "package_name": "oci://ghcr.io/argoproj/argo-helm/argo-cd"}
   ]
 }
 ```
