@@ -13,6 +13,7 @@ class Ecosystem(str, Enum):
     NuGet = "nuget"
     MavenGradle = "maven_gradle"
     Helm = "helm"
+    TerraformProvider = "terraform_provider"
 
 
 class PackageVersionRequest(BaseModel):

@@ -9,6 +9,7 @@ import json
 import asyncio
 import tempfile
 import os
+import functools
 
 from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 
@@ -84,6 +85,8 @@ async def fetch_package_version(
             return await fetch_maven_gradle_version(request.package_name)
         elif request.ecosystem == Ecosystem.Helm:
             return await fetch_helm_chart_version(request.package_name, request.version)
+        elif request.ecosystem == Ecosystem.TerraformProvider:
+            return await fetch_terraform_provider_version(request.package_name)
         else:  # Ecosystem.PyPI:
             return await fetch_pypi_version(request.package_name)
     except httpx.HTTPStatusError as e:
@@ -895,3 +898,104 @@ def _compare_semver(version1: str, version2: str) -> int:
             return 1
 
     return 0
+
+
+def parse_terraform_provider_name(package_name: str) -> tuple[str, str, str]:
+    """Parse a Terraform provider package name into registry, namespace, and type.
+
+    Args:
+        package_name: Provider name in format "[registry/]<namespace>/<type>"
+                      If registry is omitted, registry.terraform.io is assumed.
+                      Examples:
+                        - "hashicorp/aws" (defaults to registry.terraform.io)
+                        - "registry.terraform.io/hashicorp/aws"
+                        - "registry.opentofu.org/hashicorp/aws"
+
+    Returns:
+        A tuple of (registry_url, namespace, provider_type)
+
+    Raises:
+        ValueError: If the package name format is invalid
+    """
+    parts = package_name.split("/")
+
+    if len(parts) == 2:
+        # No registry specified, use default Terraform Registry
+        registry = "registry.terraform.io"
+        namespace, provider_type = parts
+    elif len(parts) == 3:
+        # Registry specified
+        registry, namespace, provider_type = parts
+    else:
+        raise ValueError(
+            f"Invalid Terraform provider name format: '{package_name}'. "
+            "Expected format: '[registry/]<namespace>/<type>' "
+            "(e.g., 'hashicorp/aws' or 'registry.terraform.io/hashicorp/aws')"
+        )
+
+    if not namespace or not provider_type:
+        raise ValueError(
+            f"Invalid Terraform provider name: '{package_name}'. "
+            "Both namespace and type must be non-empty."
+        )
+
+    return registry, namespace, provider_type
+
+
+async def fetch_terraform_provider_version(package_name: str) -> PackageVersionResult:
+    """Fetch the latest version of a Terraform provider.
+
+    Args:
+        package_name: Provider name in format "[registry/]<namespace>/<type>"
+                      If registry is omitted, registry.terraform.io is assumed.
+                      Examples:
+                        - "hashicorp/aws" (defaults to registry.terraform.io)
+                        - "registry.terraform.io/hashicorp/aws"
+                        - "registry.opentofu.org/hashicorp/aws"
+
+    Returns:
+        PackageVersionResult with the latest version information
+
+    Raises:
+        Exception: If the provider cannot be found or fetched
+    """
+    registry, namespace, provider_type = parse_terraform_provider_name(package_name)
+
+    # Construct the API URL for listing provider versions
+    # Format: https://<registry>/v1/providers/<namespace>/<type>/versions
+    url = f"https://{registry}/v1/providers/{namespace}/{provider_type}/versions"
+
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.get(url)
+        response.raise_for_status()
+        data = response.json()
+
+        versions_list = data.get("versions", [])
+        if not versions_list:
+            raise Exception(f"No versions found for provider '{package_name}'")
+
+        # Filter out prerelease versions and find the latest stable version
+        stable_versions = []
+        for v in versions_list:
+            version_str = v.get("version", "")
+            if version_str and "-" not in version_str:
+                stable_versions.append(version_str)
+
+        if not stable_versions:
+            # Fall back to all versions if no stable versions found
+            stable_versions = [v.get("version", "") for v in versions_list if v.get("version")]
+
+        if not stable_versions:
+            raise Exception(f"No valid versions found for provider '{package_name}'")
+
+        # Sort versions and get the latest
+        stable_versions.sort(key=functools.cmp_to_key(_compare_semver), reverse=True)
+        latest_version = stable_versions[0]
+
+        return PackageVersionResult(
+            ecosystem="terraform_provider",
+            package_name=package_name,
+            latest_version=latest_version,
+            digest=None,  # Terraform registry doesn't provide a single digest at version level
+            published_on=None,  # Not readily available from the versions endpoint
+        )

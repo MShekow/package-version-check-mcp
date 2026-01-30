@@ -1,5 +1,5 @@
 import pytest
-from package_version_check_mcp.get_latest_versions_pkg.functions import determine_latest_image_tag, parse_maven_package_name
+from package_version_check_mcp.get_latest_versions_pkg.functions import determine_latest_image_tag, parse_maven_package_name, parse_terraform_provider_name
 
 
 @pytest.mark.parametrize(
@@ -220,3 +220,97 @@ def test_parse_maven_package_name_invalid(package_name, test_description):
     """Test parse_maven_package_name with invalid inputs."""
     with pytest.raises(ValueError):
         parse_maven_package_name(package_name)
+
+
+@pytest.mark.parametrize(
+    "package_name,expected_registry,expected_namespace,expected_type,test_description",
+    [
+        # Test 1: Simple provider (namespace/type only, defaults to registry.terraform.io)
+        (
+            "hashicorp/aws",
+            "registry.terraform.io",
+            "hashicorp",
+            "aws",
+            "Simple provider - defaults to registry.terraform.io"
+        ),
+        # Test 2: Fully qualified with Terraform registry
+        (
+            "registry.terraform.io/hashicorp/google",
+            "registry.terraform.io",
+            "hashicorp",
+            "google",
+            "Fully qualified Terraform registry"
+        ),
+        # Test 3: OpenTofu registry
+        (
+            "registry.opentofu.org/hashicorp/random",
+            "registry.opentofu.org",
+            "hashicorp",
+            "random",
+            "OpenTofu registry - alternative registry"
+        ),
+        # Test 4: Third-party namespace
+        (
+            "integrations/github",
+            "registry.terraform.io",
+            "integrations",
+            "github",
+            "Third-party namespace provider"
+        ),
+        # Test 5: Custom private registry
+        (
+            "terraform.example.com/myorg/mycloud",
+            "terraform.example.com",
+            "myorg",
+            "mycloud",
+            "Custom private registry"
+        ),
+    ],
+)
+def test_parse_terraform_provider_name_success(package_name, expected_registry, expected_namespace, expected_type, test_description):
+    """Test parse_terraform_provider_name with valid inputs."""
+    registry, namespace, provider_type = parse_terraform_provider_name(package_name)
+    assert registry == expected_registry, f"Failed registry: {test_description}"
+    assert namespace == expected_namespace, f"Failed namespace: {test_description}"
+    assert provider_type == expected_type, f"Failed provider_type: {test_description}"
+
+
+@pytest.mark.parametrize(
+    "package_name,test_description",
+    [
+        # Test 1: Missing type
+        (
+            "hashicorp",
+            "Missing type - only one part"
+        ),
+        # Test 2: Too many slashes
+        (
+            "a/b/c/d",
+            "Too many slashes - four parts"
+        ),
+        # Test 3: Empty namespace
+        (
+            "/aws",
+            "Empty namespace"
+        ),
+        # Test 4: Empty type
+        (
+            "hashicorp/",
+            "Empty type"
+        ),
+        # Test 5: Empty package name
+        (
+            "",
+            "Empty package name"
+        ),
+        # Test 6: Fully qualified with empty parts
+        (
+            "registry.terraform.io//aws",
+            "Fully qualified with empty namespace"
+        ),
+    ],
+)
+def test_parse_terraform_provider_name_invalid(package_name, test_description):
+    """Test parse_terraform_provider_name with invalid inputs."""
+    with pytest.raises(ValueError):
+        parse_terraform_provider_name(package_name)
