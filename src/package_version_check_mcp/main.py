@@ -32,12 +32,12 @@ async def get_latest_versions(
 ) -> GetLatestVersionsResponse:
     """Get the latest versions of packages from various ecosystems.
 
-    This tool fetches the latest version information for packages from NPM, PyPI, Docker, NuGet, Maven/Gradle, and Helm.
+    This tool fetches the latest version information for packages from NPM, PyPI, Docker, NuGet, Maven/Gradle, Helm, and Go modules.
     It returns both successful lookups and any errors that occurred.
 
     Args:
         packages: A list of package version requests with:
-            - ecosystem: "npm", "pypi", "docker", "nuget", "maven_gradle", or "helm"
+            - ecosystem: "npm", "pypi", "docker", "nuget", "maven_gradle", "helm", "terraform_provider", "terraform_module", or "go"
             - package_name: The name of the package (e.g., "express", "requests", "Newtonsoft.Json")
               For Docker, this must be fully qualified (e.g., "index.docker.io/library/busybox")
               For Maven/Gradle, use format "[registry:]<groupId>:<artifactId>" (e.g., "org.springframework:spring-core" for Maven Central,
@@ -45,8 +45,9 @@ async def get_latest_versions(
               For Helm, use one of these formats:
                 - ChartMuseum: "https://host/path/chart-name" (fetches from index.yaml)
                 - OCI: "oci://host/path/chart-name" (queries OCI registry tags)
+              For Go, use the absolute module identifier (e.g., "github.com/gin-gonic/gin")
             - version: (optional) For Docker and Helm OCI, used as a tag compatibility hint (e.g., "1.2-alpine")
-              to find the latest tag matching the same suffix pattern. For NPM/PyPI/NuGet/Maven/ChartMuseum, not used.
+              to find the latest tag matching the same suffix pattern. For NPM/PyPI/NuGet/Maven/ChartMuseum/Go, not used.
 
     Returns:
         GetLatestVersionsResponse containing:
@@ -70,6 +71,7 @@ async def get_latest_versions(
         ...     PackageVersionRequest(ecosystem=Ecosystem.Docker, package_name="index.docker.io/library/alpine", version="3.19-alpine"),
         ...     PackageVersionRequest(ecosystem=Ecosystem.Helm, package_name="https://charts.bitnami.com/bitnami/nginx"),
         ...     PackageVersionRequest(ecosystem=Ecosystem.Helm, package_name="oci://ghcr.io/argoproj/argo-helm/argo-cd"),
+        ...     PackageVersionRequest(ecosystem=Ecosystem.Go, package_name="github.com/gin-gonic/gin"),
         ... ])
     """
     # Fetch all package versions concurrently

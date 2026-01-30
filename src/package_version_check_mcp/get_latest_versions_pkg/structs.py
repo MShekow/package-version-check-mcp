@@ -15,6 +15,7 @@ class Ecosystem(str, Enum):
     Helm = "helm"
     TerraformProvider = "terraform_provider"
     TerraformModule = "terraform_module"
+    Go = "go"
 
 
 class PackageVersionRequest(BaseModel):

@@ -37,6 +37,8 @@ async def mcp_client():
     (Ecosystem.TerraformModule, "terraform-aws-modules/vpc/aws"),
     (Ecosystem.TerraformModule, "terraform-aws-modules/eks/aws"),
     (Ecosystem.TerraformModule, "registry.terraform.io/Azure/network/azurerm"),
+    (Ecosystem.Go, "github.com/gin-gonic/gin"),
+    (Ecosystem.Go, "github.com/google/uuid"),
 ])
 async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
     """Test fetching valid package versions from different ecosystems."""
@@ -65,6 +67,10 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
         assert response.result[0].digest is None
         assert response.result[0].published_on is None
 
+    if ecosystem is Ecosystem.Go:
+        assert response.result[0].published_on is not None
+        assert response.result[0].digest is not None
+
     assert len(response.lookup_errors) == 0
 
 
@@ -77,6 +83,7 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
     (Ecosystem.Helm, "oci://ghcr.io/nonexistent-org-12345/nonexistent-chart-12345"),
     (Ecosystem.TerraformProvider, "nonexistent-namespace-12345/nonexistent-provider-12345"),
     (Ecosystem.TerraformModule, "nonexistent-namespace-12345/nonexistent-module-12345/aws"),
+    (Ecosystem.Go, "github.com/nonexistent-user-12345/nonexistent-repo-12345"),
 ])
 async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, package_name):
     """Test fetching non-existent packages from different ecosystems."""
