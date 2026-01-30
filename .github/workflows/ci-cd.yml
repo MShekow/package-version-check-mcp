@@ -137,4 +137,4 @@ jobs:
 
       - name: Trigger Render redeploy
         # Hide output on success, show error details on failure
-        run: curl -fsS {{ secrets.RENDER_DEPLOYHOOK_URL }}
+        run: curl -fsS ${{ secrets.RENDER_DEPLOYHOOK_URL }}
