@@ -4,7 +4,7 @@ services:
     runtime: image
     image:
       url: ghcr.io/mshekow/package-version-check-mcp:latest
-    dockerCommand: "--mode=http"
+    dockerCommand: "python /app/src/package_version_check_mcp/main.py --mode=http"
     plan: free
     startCommand: python src/package_version_check_mcp/main.py --mode=http
     healthCheckPath: /health
