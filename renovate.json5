@@ -14,11 +14,14 @@
   "automerge": false,
   "customManagers": [
     {
-      "description": "Update versions in render.yaml",
       "customType": "regex",
-      "fileMatch": ["^render\\.yaml$"],
+      "description": "Update ENV variables in Dockerfiles",
+      // See https://docs.renovatebot.com/string-pattern-matching/#regex-matching for syntax
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
       "matchStrings": [
-        "#\\s?renovate: datasource=(?<datasource>[a-z-]+?) name=(?<depName>.*?)\\s *value:\\s?\\\"?(?<currentValue>[\\w+\\.\\-]*)\""
+        "# renovate-docker-env: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))(?: versioning=(?<versioning>[a-z-]+?))?(?: extractVersion=(?<extractVersion>.+?))?\\s(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)\\s"
       ]
     }
   ],
