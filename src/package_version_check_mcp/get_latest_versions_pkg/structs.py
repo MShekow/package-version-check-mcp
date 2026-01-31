@@ -24,7 +24,7 @@ class PackageVersionRequest(BaseModel):
 
     ecosystem: Ecosystem
     package_name: str
-    version: Optional[str] = None
+    version_hint: Optional[str] = None
 
 
 class PackageVersionResult(BaseModel):

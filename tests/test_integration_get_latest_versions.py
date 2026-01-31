@@ -200,7 +200,7 @@ async def test_get_latest_versions_docker_with_tag_hint(mcp_client: Client, pack
                 PackageVersionRequest(
                     ecosystem=Ecosystem.Docker,
                     package_name=package_name,
-                    version=version_hint
+                    version_hint=version_hint
                 )
             ]
         }
@@ -234,7 +234,7 @@ async def test_get_latest_versions_php_with_version_hint(mcp_client: Client, pac
                 PackageVersionRequest(
                     ecosystem=Ecosystem.PHP,
                     package_name=package_name,
-                    version=version_hint
+                    version_hint=version_hint
                 )
             ]
         }

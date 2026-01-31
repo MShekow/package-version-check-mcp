@@ -32,13 +32,13 @@ async def fetch_package_version(
         if request.ecosystem == Ecosystem.NPM:
             return await fetch_npm_version(request.package_name)
         elif request.ecosystem == Ecosystem.Docker:
-            return await fetch_docker_version(request.package_name, request.version)
+            return await fetch_docker_version(request.package_name, request.version_hint)
         elif request.ecosystem == Ecosystem.NuGet:
             return await fetch_nuget_version(request.package_name)
         elif request.ecosystem == Ecosystem.MavenGradle:
             return await fetch_maven_gradle_version(request.package_name)
         elif request.ecosystem == Ecosystem.Helm:
-            return await fetch_helm_chart_version(request.package_name, request.version)
+            return await fetch_helm_chart_version(request.package_name, request.version_hint)
         elif request.ecosystem == Ecosystem.TerraformProvider:
             return await fetch_terraform_provider_version(request.package_name)
         elif request.ecosystem == Ecosystem.TerraformModule:
@@ -46,7 +46,7 @@ async def fetch_package_version(
         elif request.ecosystem == Ecosystem.Go:
             return await fetch_go_version(request.package_name)
         elif request.ecosystem == Ecosystem.PHP:
-            return await fetch_php_version(request.package_name, request.version)
+            return await fetch_php_version(request.package_name, request.version_hint)
         else:  # Ecosystem.PyPI:
             return await fetch_pypi_version(request.package_name)
     except httpx.HTTPStatusError as e:

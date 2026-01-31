@@ -85,7 +85,7 @@ Fetches the latest versions of packages from various ecosystems.
     - For terraform_module: "[registry/]<namespace>/<name>/<provider>" format (e.g., "terraform-aws-modules/vpc/aws" or "registry.terraform.io/terraform-aws-modules/vpc/aws"). If registry is omitted, registry.terraform.io is assumed. Supports alternative registries like registry.opentofu.org.
     - For go: Absolute module identifier (e.g., "github.com/gin-gonic/gin")
     - For php: Package name in "vendor/package" format (e.g., "monolog/monolog", "laravel/framework")
-  - `version` (optional):
+  - `version_hint` (optional):
     - For docker: tag compatibility hint (e.g., "1.36-alpine") to find the latest tag matching the same suffix pattern. If omitted, returns the latest semantic version tag.
     - For helm (OCI only): tag compatibility hint similar to Docker
     - For php: PHP version hint (e.g., "php:8.1" or "8.2") to filter packages compatible with that PHP version. If omitted, returns the latest stable version regardless of PHP compatibility.
