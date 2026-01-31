@@ -89,7 +89,11 @@ async def mcp_client(docker_container_base_url: str) -> AsyncGenerator[Client, N
 
 
 async def test_get_latest_package_versions_npm_success_e2e(mcp_client: Client):
-    """E2E test: Fetch a valid NPM package version from the MCP server running in Docker."""
+    """
+    Fetch a valid NPM package version from the MCP server running in Docker.
+
+    This verifies that there are no PYTHONPATH or dependency issues within the Docker image.
+    """
     result = await mcp_client.call_tool(
         name="get_latest_package_versions",
         arguments={
@@ -112,8 +116,39 @@ async def test_get_latest_package_versions_npm_success_e2e(mcp_client: Client):
     assert len(response.lookup_errors) == 0
 
 
+async def test_get_latest_helm_chart_version_e2e(mcp_client: Client):
+    """
+    Fetch a valid Helm chart version from the MCP server running in Docker.
+
+    This verifies that the yq binary is properly installed and accessible within
+    the Docker image for parsing large Helm index.yaml files.
+    """
+    result = await mcp_client.call_tool(
+        name="get_latest_package_versions",
+        arguments={
+            "packages": [
+                PackageVersionRequest(ecosystem=Ecosystem.Helm, package_name="https://charts.bitnami.com/bitnami/nginx")
+            ]
+        }
+    )
+
+    assert result.structured_content is not None
+    response = GetLatestVersionsResponse.model_validate(result.structured_content)
+    assert len(response.result) == 1
+    assert response.result[0].ecosystem == "helm"
+    assert response.result[0].package_name == "https://charts.bitnami.com/bitnami/nginx"
+    assert response.result[0].latest_version != ""
+    # Helm charts should have semantic versions like "1.2.3"
+    assert "." in response.result[0].latest_version
+    assert len(response.lookup_errors) == 0
+
+
 async def test_get_supported_tools_e2e(mcp_client: Client):
-    """E2E test: Fetch the list of supported mise tools from the MCP server running in Docker."""
+    """
+    Fetch the list of supported mise tools from the MCP server running in Docker.
+
+    This ensures that the "mise" tool is properly accessible within the Docker image.
+    """
     result = await mcp_client.call_tool(
         name="get_supported_tools",
         arguments={}
