@@ -152,6 +152,30 @@ Fetches the latest versions and metadata for GitHub Actions hosted on github.com
 }
 ```
 
+#### `get_supported_tools`
+
+Returns a list of all tool names supported by the `get_latest_tool_versions` MCP tool.
+
+This tool queries the `mise` registry to retrieve all available tool names that can be managed by mise.
+
+**Input:**
+- No parameters required
+
+**Output:**
+- Array of tool short names (e.g., ["1password", "act", "node", "python", ...])
+
+**Example:**
+```json
+{}
+```
+
+**Example Response:**
+```json
+{
+  "result": ["1password", "1password-cli", "aapt2", "act", "action-validator", "actionlint", "node", "python", ...]
+}
+```
+
 ## Development
 
 ### Prerequisites

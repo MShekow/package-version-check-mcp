@@ -5,6 +5,8 @@ A FastMCP server that checks the latest versions of packages across different ec
 
 import argparse
 import asyncio
+import json
+import subprocess
 
 from fastmcp import FastMCP
 from starlette.requests import Request
@@ -147,6 +149,30 @@ async def get_github_action_versions_and_args(
             errors.append(result)
 
     return GetGitHubActionVersionsResponse(result=successful_results, lookup_errors=errors)
+
+
+@mcp.tool()
+async def get_supported_tools() -> list[str]:
+    """Get list of all tools supported by the get_latest_tool_versions MCP tool.
+
+    This tool queries the mise registry to retrieve all available tool names
+    that can be used with the get_latest_tool_versions tool.
+
+    Returns:
+        A list of tool short names (e.g., ["1password", "act", "node", "python", ...])
+
+    Example:
+        >>> await get_supported_tools()
+        ["1password", "act", "node", "python", ...]
+    """
+    result = subprocess.run(
+        ["mise", "registry", "--json"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    registry = json.loads(result.stdout)
+    return [entry["short"] for entry in registry]
 
 
 def main():

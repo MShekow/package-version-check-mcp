@@ -22,7 +22,7 @@ RUN /tmp/poetry/bin/poetry install --no-interaction --no-ansi --no-root --only m
 
 COPY src/ ./src/
 
-FROM alpine/curl:latest AS yq-downloader
+FROM alpine/curl:latest AS yq-and-mise-downloader
 # Download yq for fast YAML processing (used for Helm ChartMuseum index parsing)
 # Note: TARGETARCH is e.g. arm64 or amd64
 ARG TARGETARCH
@@ -30,6 +30,13 @@ ARG TARGETARCH
 ENV YQ_VERSION=v4.50.1
 RUN curl -Lo /yq https://github.com/mikefarah/yq/releases/download/$YQ_VERSION/yq_linux_${TARGETARCH} \
   && chmod +x /yq
+# renovate-docker-env: datasource=github-tags depName=jdx/mise
+ENV MISE_VERSION=v2026.1.12
+RUN apk add --no-cache tar zstd && \
+    MISE_ARCH=$([ "$TARGETARCH" = "amd64" ] && echo "x64" || echo "$TARGETARCH") && \
+    curl -fsSL https://github.com/jdx/mise/releases/download/${MISE_VERSION}/mise-${MISE_VERSION}-linux-${MISE_ARCH}.tar.zst -o /tmp/mise.tar.zst && \
+    tar -xf /tmp/mise.tar.zst -C /tmp && mv /tmp/mise/bin/mise /usr/bin/mise && \
+    chmod +x /usr/bin/mise && rm -rf /tmp/mise.tar.zst /tmp/mise
 
 
 FROM dhi.io/python:3.14.2 AS runtime-stage
@@ -40,7 +47,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app/src"
 
 COPY --from=build-stage /app /app
-COPY --from=yq-downloader /yq /usr/bin/yq
+COPY --from=yq-and-mise-downloader /yq /usr/bin/yq
+COPY --from=yq-and-mise-downloader /usr/bin/mise /usr/bin/mise
 
 COPY --from=lprobe --link /build/lprobe /bin/lprobe
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \

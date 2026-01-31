@@ -111,4 +111,21 @@ async def test_get_latest_package_versions_npm_success_e2e(mcp_client: Client):
     assert response.result[0].published_on is not None
     assert len(response.lookup_errors) == 0
 
-    logger.info("✓ E2E test passed: Got express version %s", response.result[0].latest_version)
+
+async def test_get_supported_tools_e2e(mcp_client: Client):
+    """E2E test: Fetch the list of supported mise tools from the MCP server running in Docker."""
+    result = await mcp_client.call_tool(
+        name="get_supported_tools",
+        arguments={}
+    )
+
+    assert result.structured_content is not None
+    tools = result.structured_content.get("result", result.structured_content)
+    assert isinstance(tools, list)
+    assert len(tools) > 800
+    # All entries should be strings
+    assert all(isinstance(tool, str) for tool in tools)
+    # Check for some well-known tools that should be in the registry
+    assert "node" in tools
+    assert "python" in tools
+
