@@ -88,10 +88,10 @@ async def mcp_client(docker_container_base_url: str) -> AsyncGenerator[Client, N
         yield client
 
 
-async def test_get_latest_versions_npm_success_e2e(mcp_client: Client):
+async def test_get_latest_package_versions_npm_success_e2e(mcp_client: Client):
     """E2E test: Fetch a valid NPM package version from the MCP server running in Docker."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express")

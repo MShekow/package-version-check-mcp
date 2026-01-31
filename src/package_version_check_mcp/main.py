@@ -27,7 +27,7 @@ async def health_check(request: Request) -> JSONResponse:
 
 
 @mcp.tool()
-async def get_latest_versions(
+async def get_latest_package_versions(
     packages: list[PackageVersionRequest],
 ) -> GetLatestVersionsResponse:
     """Get the latest versions of packages from various ecosystems.
@@ -66,7 +66,7 @@ async def get_latest_versions(
                 - error: Description of the error
 
     Example:
-        >>> await get_latest_versions([
+        >>> await get_latest_package_versions([
         ...     PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express"),
         ...     PackageVersionRequest(ecosystem=Ecosystem.PyPI, package_name="requests"),
         ...     PackageVersionRequest(ecosystem=Ecosystem.NuGet, package_name="Newtonsoft.Json"),

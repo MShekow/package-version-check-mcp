@@ -43,10 +43,10 @@ async def mcp_client():
     (Ecosystem.PHP, "laravel/framework"),
     (Ecosystem.PHP, "symfony/console"),
 ])
-async def test_get_latest_versions_success(mcp_client: Client, ecosystem, package_name):
+async def test_get_latest_package_versions_success(mcp_client: Client, ecosystem, package_name):
     """Test fetching valid package versions from different ecosystems."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(ecosystem=ecosystem, package_name=package_name)
@@ -94,10 +94,10 @@ async def test_get_latest_versions_success(mcp_client: Client, ecosystem, packag
     (Ecosystem.Go, "github.com/nonexistent-user-12345/nonexistent-repo-12345"),
     (Ecosystem.PHP, "nonexistent-vendor-12345/nonexistent-package-12345"),
 ])
-async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, package_name):
+async def test_get_latest_package_versions_not_found(mcp_client: Client, ecosystem, package_name):
     """Test fetching non-existent packages from different ecosystems."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(ecosystem=ecosystem, package_name=package_name)
@@ -116,10 +116,10 @@ async def test_get_latest_versions_not_found(mcp_client: Client, ecosystem, pack
     assert "not found" in error_lower or "403" in error_lower or "forbidden" in error_lower
 
 
-async def test_get_latest_versions_mixed_success_and_failure(mcp_client: Client):
-    """Test get_latest_versions with both valid and invalid packages."""
+async def test_get_latest_package_versions_mixed_success_and_failure(mcp_client: Client):
+    """Test get_latest_package_versions with both valid and invalid packages."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express"),
@@ -144,10 +144,10 @@ async def test_get_latest_versions_mixed_success_and_failure(mcp_client: Client)
     assert all("not found" in err.error.lower() for err in response.lookup_errors)
 
 
-async def test_get_latest_versions_empty_input(mcp_client: Client):
-    """Test get_latest_versions with empty input."""
+async def test_get_latest_package_versions_empty_input(mcp_client: Client):
+    """Test get_latest_package_versions with empty input."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={"packages": []}
     )
 
@@ -157,10 +157,10 @@ async def test_get_latest_versions_empty_input(mcp_client: Client):
     assert len(response.lookup_errors) == 0
 
 
-async def test_get_latest_versions_multiple_packages(mcp_client: Client):
-    """Test get_latest_versions with multiple valid packages."""
+async def test_get_latest_package_versions_multiple_packages(mcp_client: Client):
+    """Test get_latest_package_versions with multiple valid packages."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(ecosystem=Ecosystem.NPM, package_name="express"),
@@ -191,10 +191,10 @@ async def test_get_latest_versions_multiple_packages(mcp_client: Client):
     ("index.docker.io/library/busybox", "1.36-glibc", "glibc"),
     ("index.docker.io/library/memcached", "1-bookworm", "bookworm"),
 ])
-async def test_get_latest_versions_docker_with_tag_hint(mcp_client: Client, package_name, version_hint, expected_suffix):
+async def test_get_latest_package_versions_docker_with_tag_hint(mcp_client: Client, package_name, version_hint, expected_suffix):
     """Test fetching Docker image versions with tag compatibility hint."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(
@@ -225,10 +225,10 @@ async def test_get_latest_versions_docker_with_tag_hint(mcp_client: Client, pack
     ("monolog/monolog", "8.2"),
     ("symfony/console", "php:8.1"),
 ])
-async def test_get_latest_versions_php_with_version_hint(mcp_client: Client, package_name, version_hint):
+async def test_get_latest_package_versions_php_with_version_hint(mcp_client: Client, package_name, version_hint):
     """Test fetching PHP package versions with PHP version compatibility hint."""
     result = await mcp_client.call_tool(
-        name="get_latest_versions",
+        name="get_latest_package_versions",
         arguments={
             "packages": [
                 PackageVersionRequest(

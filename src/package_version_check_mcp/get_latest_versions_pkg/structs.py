@@ -46,7 +46,7 @@ class PackageVersionError(BaseModel):
 
 
 class GetLatestVersionsResponse(BaseModel):
-    """Response from get_latest_versions tool."""
+    """Response from get_latest_package_versions tool."""
 
     result: list[PackageVersionResult]
     lookup_errors: list[PackageVersionError]
