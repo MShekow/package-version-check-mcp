@@ -38,6 +38,9 @@ jobs:
       - name: Build Docker image
         run: docker build -t package-version-check-mcp .
 
+      - name: Install mise-en-place
+        run: curl https://mise.run | sh
+
       - name: Run pytest
         run: |
           python -m venv .venv
