@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2026-01-31
+
+### Added
+- **get_supported_tools MCP tool**: New tool to query available tool managers and their installation methods
+- **get_latest_tool_versions MCP tool**: Fetch latest versions of development tools like Node.js, Python, Go, etc. via mise-en-place
+
+### Changed
+- **Renamed tool**: `get_latest_versions` to `get_latest_package_versions`
+
 ## [0.0.4] - 2026-01-31
 
 ### Added
