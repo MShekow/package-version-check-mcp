@@ -18,6 +18,9 @@ from package_version_check_mcp.get_github_actions_pkg.structs import GitHubActio
 from package_version_check_mcp.get_latest_versions_pkg import fetch_package_version
 from package_version_check_mcp.get_latest_versions_pkg.structs import PackageVersionRequest, \
     PackageVersionResult, PackageVersionError, GetLatestVersionsResponse
+from package_version_check_mcp.get_latest_tools_pkg.functions import fetch_latest_tool_version
+from package_version_check_mcp.get_latest_tools_pkg.structs import LatestToolResult, LatestToolError, \
+    GetLatestToolVersionsResponse
 
 mcp = FastMCP("Package Version Check")
 
@@ -173,6 +176,66 @@ async def get_supported_tools() -> list[str]:
     )
     registry = json.loads(result.stdout)
     return [entry["short"] for entry in registry]
+
+
+@mcp.tool()
+async def get_latest_tool_versions(
+    tool_names: list[str],
+) -> GetLatestToolVersionsResponse:
+    """Get the latest stable versions of tools supported by mise-en-place.
+
+    This tool fetches the latest stable version of development and DevOps tools
+    that are NOT part of language ecosystems like PyPI or NPM. For language
+    ecosystem packages, use the get_latest_package_versions tool instead.
+
+    Use this tool to determine the latest versions of tools like:
+    - gradle: Pin the Gradle version in distributionUrl in gradle-wrapper.properties
+      (e.g., distributionUrl=https://services.gradle.org/distributions/gradle-8.5-bin.zip)
+    - maven: Pin the Maven version in distributionUrl in maven-wrapper.properties
+      (e.g., distributionUrl=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.6/apache-maven-3.9.6-bin.zip)
+    - terraform: Pin terraform.required_version in a file like version.tf or versions.tf
+      (e.g., terraform { required_version = "~> 1.6.0" })
+    - kubectl: Pin the version in a download URL called with curl or wget in a Dockerfile
+      (e.g., RUN curl -LO https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl)
+    - azure: Pin Azure CLI version in download URL
+      (e.g., curl -LO https://azurecliprod.blob.core.windows.net/releases/azure-cli-2.50.0.tar.gz)
+
+    To see all available tools, use the get_supported_tools tool.
+
+    Args:
+        tool_names: A list of tool names (e.g., ["terraform", "gradle", "kubectl"])
+
+    Returns:
+        GetMiseToolVersionsResponse containing:
+            - result: List of successful tool version lookups with:
+                - tool_name: The tool name (as provided)
+                - latest_version: The latest stable version number (e.g., "1.6.5")
+            - lookup_errors: List of errors that occurred during lookup with:
+                - tool_name: The tool name (as provided)
+                - error: Description of the error
+
+    Example:
+        >>> await get_latest_tool_versions(
+        ...     tool_names=["terraform", "gradle", "kubectl"]
+        ... )
+    """
+    # Fetch all tool versions concurrently
+    results = await asyncio.gather(
+        *[fetch_latest_tool_version(name) for name in tool_names],
+        return_exceptions=False,
+    )
+
+    # Separate successful results from errors
+    successful_results = []
+    errors = []
+
+    for result in results:
+        if isinstance(result, LatestToolResult):
+            successful_results.append(result)
+        elif isinstance(result, LatestToolError):
+            errors.append(result)
+
+    return GetLatestToolVersionsResponse(result=successful_results, lookup_errors=errors)
 
 
 def main():

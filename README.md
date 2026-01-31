@@ -1,9 +1,12 @@
 # package-version-check-mcp
-A MCP server that returns the current, up-to-date version of packages you use as dependencies in a variety of ecosystems, such as Python, NPM, Go, or GitHub Actions
+
+A MCP server that returns the current, up-to-date version of packages you use as dependencies in a variety of ecosystems, such as Python, NPM, Go, or GitHub Actions.
+
+It also supports looking up the latest versions of almost 1000 tools, such as **development runtimes** like `python`, `node`, `dotnet`, **development tools** like `gradle`, and various **DevOps tools** like `kubectl` or `terraform`, via the [mise-en-place](https://github.com/mshekow/mise-en-place) tool.
 
 ## Features
 
-Supported ecosystems:
+Supported ecosystems / tools:
 - Developer ecosystems:
   - **NPM** - Node.js packages from registry.npmjs.org
   - **PyPI** - Python packages from PyPI
@@ -16,6 +19,7 @@ Supported ecosystems:
   - **Helm** - Helm charts from ChartMuseum repositories and OCI registries
   - **GitHub Actions** - Actions hosted on GitHub.com, returning their current version, their inputs and outputs, and (optionally) their entire README with usage examples
   - **Terraform _Providers_ and _Modules_** - Providers & Modules from Terraform Registry, OpenTofu Registry, or custom registries
+  - Various _tools_ such as `kubectl`, `terraform`, `gradle`, `maven`, etc. supported by mise-en-place
 
 ## Usage
 
@@ -29,6 +33,7 @@ Point your agent to the free hosted service:
 ```
 https://package-version-check-mcp.onrender.com/mcp
 ```
+in (streamable) HTTP mode.
 
 This is the quickest way to get started. Note that the hosted service may have rate limits from the underlying package registries.
 
@@ -176,9 +181,58 @@ This tool queries the `mise` registry to retrieve all available tool names that 
 }
 ```
 
+#### `get_latest_tool_versions`
+
+Fetches the latest stable versions of development and DevOps tools supported by mise-en-place.
+
+This tool is for tools that are NOT part of language ecosystems like PyPI or NPM. For language ecosystem packages, use `get_latest_package_versions` instead.
+
+**Use cases:**
+- **gradle** or **maven**: Pin the Gradle or Maven version in the `distributionUrl` in `gradle-wrapper.properties` or `maven-wrapper.properties`
+  - Example: `distributionUrl=https://services.gradle.org/distributions/gradle-8.5-bin.zip`
+  - Example: `distributionUrl=https://repo.maven.apache.org/.../apache-maven-3.9.6-bin.zip`
+- **terraform**: Pin `terraform.required_version` in a file like `version.tf` or `versions.tf`
+  - Example: `terraform { required_version = "~> 1.6.0" }`
+- **kubectl** or **azure**: Pin the version in a download URL called with `curl` or `wget`, e.g., in a Dockerfile
+  - Example: `RUN curl -LO https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl`
+
+To see all available tools, use the `get_supported_tools` tool.
+
+**Input:**
+- `tool_names` (required): Array of tool names (e.g., ["terraform", "gradle", "kubectl"])
+
+**Output:**
+- `result`: Array of successful lookups with:
+  - `tool_name`: The tool name (as provided)
+  - `latest_version`: The latest stable version number (e.g., "1.6.5")
+- `lookup_errors`: Array of errors with:
+  - `tool_name`: The tool name (as provided)
+  - `error`: Description of the error
+
+**Example:**
+```json
+{
+  "tool_names": ["terraform", "gradle", "kubectl"]
+}
+```
+
+**Example Response:**
+```json
+{
+  "result": [
+    {"tool_name": "terraform", "latest_version": "1.14.4"},
+    {"tool_name": "gradle", "latest_version": "8.5"},
+    {"tool_name": "kubectl", "latest_version": "1.28.0"}
+  ],
+  "lookup_errors": []
+}
+```
+
 ## Development
 
 ### Prerequisites
+
+#### yq
 
 For Helm ChartMuseum support, the server requires `yq` (a fast YAML processor) to be installed:
 
@@ -188,6 +242,10 @@ For Helm ChartMuseum support, the server requires `yq` (a fast YAML processor) t
 - **macOS**: `brew install yq`
 
 Without `yq`, Helm ChartMuseum repositories will not work (OCI Helm charts will still work).
+
+#### mise-en-place
+
+The MCP server depends on the `mise-en-place` package for looking up tool versions. See https://mise.jdx.dev/installing-mise.html for installation instructions.
 
 ### Running the Server Manually (For Development)
 

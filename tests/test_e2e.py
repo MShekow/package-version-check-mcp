@@ -164,3 +164,30 @@ async def test_get_supported_tools_e2e(mcp_client: Client):
     assert "node" in tools
     assert "python" in tools
 
+
+async def test_get_latest_tool_versions_php_e2e(mcp_client: Client):
+    """
+    Fetch the latest PHP version from the MCP server running in Docker.
+
+    This verifies that the "mise" tool is properly installed and accessible,
+    and that version filtering works correctly (excluding vendor-specific versions).
+    """
+    result = await mcp_client.call_tool(
+        name="get_latest_tool_versions",
+        arguments={
+            "tool_names": ["php"]
+        }
+    )
+
+    assert result.structured_content is not None
+    from package_version_check_mcp.get_latest_tools_pkg.structs import GetLatestToolVersionsResponse
+    response = GetLatestToolVersionsResponse.model_validate(result.structured_content)
+    assert len(response.result) == 1
+    assert response.result[0].tool_name == "php"
+    assert response.result[0].latest_version != ""
+    # PHP should have a version like "8.x.x"
+    assert "." in response.result[0].latest_version
+    # Ensure it's a numeric version (not vendor-specific like "zulu-8.72.0.17")
+    assert response.result[0].latest_version[0].isdigit()
+    assert len(response.lookup_errors) == 0
+
