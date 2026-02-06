@@ -5,7 +5,8 @@ WORKDIR /build
 ADD https://github.com/MShekow/local-health-check.git#main .
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o lprobe .
 
-FROM dhi.io/python:3.14.2-dev AS build-stage
+# Temporarily use coarse 3.14 tag (instead of 3.14.x) while Renovate is not able to detect the latest tag from dhi.io
+FROM dhi.io/python:3.14-dev AS build-stage
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -34,8 +35,8 @@ RUN apk add --no-cache tar zstd && \
     tar -xf /tmp/mise.tar.zst -C /tmp && mv /tmp/mise/bin/mise /usr/bin/mise && \
     chmod +x /usr/bin/mise && rm -rf /tmp/mise.tar.zst /tmp/mise
 
-
-FROM dhi.io/python:3.14.2 AS runtime-stage
+# Temporarily use coarse 3.14 tag (instead of 3.14.x) while Renovate is not able to detect the latest tag from dhi.io
+FROM dhi.io/python:3.14 AS runtime-stage
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
