@@ -1,14 +1,16 @@
 """Tests for the package version check MCP server."""
 
 import pytest
+from pytest_mock import MockerFixture
 from fastmcp import Client
 
 from package_version_check_mcp.main import (
     mcp,
 )
 from package_version_check_mcp.get_latest_package_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
-    GetLatestVersionsResponse
+    GetLatestVersionsResponse, PackageVersionResult
 from package_version_check_mcp.utils.version_parser import Version
+from package_version_check_mcp.get_latest_package_versions_pkg.dispatcher import fetch_package_version, _version_cache
 
 
 @pytest.fixture
@@ -270,4 +272,66 @@ async def test_get_latest_package_versions_docker_with_tag_hint(
         f"Expected 0 errors, got {len(response.lookup_errors)}: {response.lookup_errors}"
 
 
+async def test_cache_disabled_logic(mocker: MockerFixture):
+    """Verify cache behavior when disabled (default)."""
+    # Setup
+    request = PackageVersionRequest(ecosystem=Ecosystem.PyPI, package_name="requests")
+    expected_result = PackageVersionResult(
+        ecosystem=Ecosystem.PyPI,
+        package_name="requests",
+        latest_version="2.31.0"
+    )
 
+    # Patch CACHE_ENABLED to be False
+    mocker.patch("package_version_check_mcp.get_latest_package_versions_pkg.dispatcher.CACHE_ENABLED", False)
+    mock_fetch = mocker.patch("package_version_check_mcp.get_latest_package_versions_pkg.dispatcher.fetch_pypi_version", new_callable=mocker.AsyncMock)
+    mock_fetch.return_value = expected_result
+
+    # Clear cache to be safe
+    _version_cache.clear()
+
+    # First call
+    result1 = await fetch_package_version(request)
+    assert result1 == expected_result
+    assert mock_fetch.call_count == 1
+
+    # Second call - should fetch again because cache is disabled
+    result2 = await fetch_package_version(request)
+    assert result2 == expected_result
+    assert mock_fetch.call_count == 2
+
+    # Verify cache is still empty
+    assert not _version_cache
+
+
+async def test_cache_enabled_logic(mocker: MockerFixture):
+    """Verify cache behavior when enabled."""
+    # Setup
+    request = PackageVersionRequest(ecosystem=Ecosystem.PyPI, package_name="requests")
+    expected_result = PackageVersionResult(
+        ecosystem=Ecosystem.PyPI,
+        package_name="requests",
+        latest_version="2.31.0"
+    )
+
+    # Patch CACHE_ENABLED to be True
+    mocker.patch("package_version_check_mcp.get_latest_package_versions_pkg.dispatcher.CACHE_ENABLED", True)
+    mock_fetch = mocker.patch("package_version_check_mcp.get_latest_package_versions_pkg.dispatcher.fetch_pypi_version", new_callable=mocker.AsyncMock)
+    mock_fetch.return_value = expected_result
+
+    # Clear cache
+    _version_cache.clear()
+
+    # First call
+    result1 = await fetch_package_version(request)
+    assert result1 == expected_result
+    assert mock_fetch.call_count == 1
+
+    # Second call - should hit cache
+    result2 = await fetch_package_version(request)
+    assert result2 == expected_result
+    assert mock_fetch.call_count == 1
+
+    # Verify in cache
+    cache_key = (request.ecosystem, request.package_name, request.version_hint)
+    assert cache_key in _version_cache

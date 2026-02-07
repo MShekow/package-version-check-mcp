@@ -70,6 +70,16 @@ docker run --pull=always --rm -i ghcr.io/mshekow/package-version-check-mcp:lates
 
 **Optional but recommended:** Pass the `GITHUB_PAT` environment variable using `-e GITHUB_PAT=your_token_here` to avoid GitHub API rate limits.
 
+### Caching Configuration
+
+To improve performance and reduce API calls to package registries, you can enable caching:
+
+- `PACKAGE_VERSION_CACHE_ENABLED`: Set to `true` to enable caching (disabled by default)
+- `PACKAGE_VERSION_CACHE_TTL_SECONDS`: Cache duration in seconds (default: 3600 / 1 hour)
+- `PACKAGE_VERSION_CACHE_MAX_SIZE_MB`: Maximum cache size in MB (default: 64)
+
+The cache is an in-memory TTL (Time-To-Live) cache. It resets when the MCP server restarts.
+
 ### Configuring Your Agent
 
 Once you've added the MCP server, you need to:

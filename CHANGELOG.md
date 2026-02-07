@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note:** There is an automatic release GitHub workflow which regularly pushes new _patch-level_ (x.y.**z**) releases to PyPI and GHCR, whenever there are updates for the underlying dependencies used by this MCP. These patch versions do _not_ appear in this changelog!
 
+## [1.1.0] - 2026-02-07
+
+### Changed
+- **Caching now optional**: The caching layer introduced in v1.0.0 is now optional
+
 ## [1.0.0] - 2026-02-06
 
 ### Added

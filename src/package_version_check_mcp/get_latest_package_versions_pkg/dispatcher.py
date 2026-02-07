@@ -24,6 +24,8 @@ from .fetchers import (
 from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 
 # Cache configuration
+# Default: Disabled
+CACHE_ENABLED = os.environ.get("PACKAGE_VERSION_CACHE_ENABLED", "false").lower() == "true"
 # Default TTL: 1 hour (3600 seconds)
 CACHE_TTL = int(os.environ.get("PACKAGE_VERSION_CACHE_TTL_SECONDS", 3600))
 # Default Max Size: 64 MB
@@ -59,7 +61,7 @@ async def fetch_package_version(
     """
     cache_key = (request.ecosystem, request.package_name, request.version_hint)
 
-    if cache_key in _version_cache:
+    if CACHE_ENABLED and cache_key in _version_cache:
         return _version_cache[cache_key]
 
     try:
@@ -92,7 +94,8 @@ async def fetch_package_version(
         else:  # Ecosystem.PyPI:
             result = await fetch_pypi_version(request.package_name)
 
-        _version_cache[cache_key] = result
+        if CACHE_ENABLED:
+            _version_cache[cache_key] = result
         return result
 
     except httpx.HTTPStatusError as e:
@@ -104,7 +107,8 @@ async def fetch_package_version(
             package_name=request.package_name,
             error=error_msg,
         )
-        _version_cache[cache_key] = result
+        if CACHE_ENABLED:
+            _version_cache[cache_key] = result
         return result
     except Exception as e:
         result = PackageVersionError(
@@ -112,5 +116,6 @@ async def fetch_package_version(
             package_name=request.package_name,
             error=f"Failed to fetch package version: {str(e)}",
         )
-        _version_cache[cache_key] = result
+        if CACHE_ENABLED:
+            _version_cache[cache_key] = result
         return result
