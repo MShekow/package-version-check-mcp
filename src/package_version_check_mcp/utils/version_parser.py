@@ -14,7 +14,6 @@ from typing import Any, SupportsInt, Tuple, Union
 
 from ._structures import Infinity, InfinityType, NegativeInfinity, NegativeInfinityType
 
-
 _LETTER_NORMALIZATION = {
     "alpha": "a",
     "beta": "b",
@@ -26,7 +25,6 @@ _LETTER_NORMALIZATION = {
     "milestone": "m",
     "m": "m",
 }
-
 
 CmpPrePostDevType = Union[InfinityType, NegativeInfinityType, Tuple[str, int]]
 CmpVariantType = Union[InfinityType, str]
@@ -69,7 +67,6 @@ class _BaseVersion:
     # we are just requiring it to be readable. Actually defining a property
     # has runtime effect on subclasses, so it's typing only.
     if typing.TYPE_CHECKING:
-
         @property
         def _key(self) -> tuple[Any, ...]: ...
 
@@ -424,7 +421,7 @@ class Version(_BaseVersion):
 
 
 def _parse_letter_version(
-    letter: str | None, number: str | bytes | SupportsInt | None
+        letter: str | None, number: str | bytes | SupportsInt | None
 ) -> tuple[str, int] | None:
     if letter:
         # We normalize any letters to their lower case form
@@ -448,11 +445,11 @@ def _parse_letter_version(
 
 
 def _cmpkey(
-    release: tuple[int, ...],
-    pre: tuple[str, int] | None,
-    post: tuple[str, int] | None,
-    dev: tuple[str, int] | None,
-    variant: str | None,
+        release: tuple[int, ...],
+        pre: tuple[str, int] | None,
+        post: tuple[str, int] | None,
+        dev: tuple[str, int] | None,
+        variant: str | None,
 ) -> CmpKey:
     # When we compare a release version, we want to compare it with all of the
     # trailing zeros removed. We will use this for our sorting key.

@@ -1,7 +1,8 @@
 """Maven/Gradle package version fetcher."""
 
-import httpx
 import xml.etree.ElementTree as ET
+
+import httpx
 
 from ..structs import PackageVersionResult, Ecosystem
 from ...utils.version_parser import Version, InvalidVersion

@@ -7,9 +7,7 @@ import httpx
 from ...utils.version_parser import Version, InvalidVersion
 
 
-async def fetch_latest_github_tag(
-    owner: str, repo: str, client: httpx.AsyncClient
-) -> tuple[str, str, str]:
+async def fetch_latest_github_tag(owner: str, repo: str, client: httpx.AsyncClient) -> tuple[str, str, str]:
     """Fetch the latest Git tag for a GitHub repository.
 
     Args:

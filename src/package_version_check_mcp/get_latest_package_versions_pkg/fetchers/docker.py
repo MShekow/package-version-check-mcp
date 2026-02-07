@@ -1,10 +1,10 @@
 """Docker image version fetcher."""
 
-from typing import Optional
 import urllib.parse
+from typing import Optional
 
-from docker_registry_client_async import DockerRegistryClientAsync, ImageName
 from aiohttp import ClientResponseError
+from docker_registry_client_async import DockerRegistryClientAsync, ImageName
 from yarl import URL
 
 from ..structs import PackageVersionResult, Ecosystem
@@ -12,7 +12,7 @@ from ..utils.version_parser import parse_docker_tag
 
 
 async def fetch_docker_version(
-    package_name: str, tag_hint: Optional[str] = None
+        package_name: str, tag_hint: Optional[str] = None
 ) -> PackageVersionResult:
     """Fetch the latest version tag of a Docker image.
 
@@ -129,6 +129,7 @@ def determine_latest_image_tag(available_tags: list[str], tag_hint: Optional[str
         >>> determine_latest_image_tag(['3.7.0', '3.8.0-alpine'], '3.7.0-alpine')
         None
     """
+
     def is_stable(parsed: dict) -> bool:
         """Check if a version is stable (no prerelease marker)."""
         return not parsed['prerelease']

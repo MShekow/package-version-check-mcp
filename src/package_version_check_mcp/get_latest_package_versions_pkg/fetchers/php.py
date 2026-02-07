@@ -1,18 +1,12 @@
 """PHP/Packagist package version fetcher using the Packagist v2 API."""
 
-import re
-from typing import Optional
-
 import httpx
 
 from ..structs import PackageVersionResult, Ecosystem
-from ..utils.version_parser import parse_docker_tag
 from ...utils.version_parser import Version, InvalidVersion
 
 
-async def fetch_php_version(
-    package_name: str,
-) -> PackageVersionResult:
+async def fetch_php_version(package_name: str) -> PackageVersionResult:
     """Fetch the latest stable version of a PHP/Packagist package.
 
     Uses the Packagist v2 API (repo.packagist.org/p2/) which returns

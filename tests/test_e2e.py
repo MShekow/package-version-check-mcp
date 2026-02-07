@@ -11,7 +11,7 @@ import pytest
 from fastmcp import Client
 from testcontainers.core.container import DockerContainer
 
-from package_version_check_mcp.get_latest_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
+from package_version_check_mcp.get_latest_package_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
     GetLatestVersionsResponse
 
 logger = logging.getLogger(__name__)

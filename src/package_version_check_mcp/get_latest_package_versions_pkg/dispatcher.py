@@ -1,10 +1,10 @@
 """Main dispatcher for fetching package versions across different ecosystems."""
 
-import httpx
 import os
+
+import httpx
 from cachetools import TTLCache
 
-from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 from .fetchers import (
     fetch_npm_version,
     fetch_pypi_version,
@@ -21,7 +21,7 @@ from .fetchers import (
     fetch_swift_version,
     fetch_dart_version,
 )
-
+from .structs import PackageVersionResult, PackageVersionRequest, PackageVersionError, Ecosystem
 
 # Cache configuration
 # Default TTL: 1 hour (3600 seconds)
@@ -47,7 +47,7 @@ _version_cache = TTLCache(
 
 
 async def fetch_package_version(
-    request: PackageVersionRequest,
+        request: PackageVersionRequest,
 ) -> PackageVersionResult | PackageVersionError:
     """Fetch the latest version of a package from its ecosystem.
 

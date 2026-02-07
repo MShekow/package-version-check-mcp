@@ -6,7 +6,7 @@ from fastmcp import Client
 from package_version_check_mcp.main import (
     mcp,
 )
-from package_version_check_mcp.get_latest_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
+from package_version_check_mcp.get_latest_package_versions_pkg.structs import Ecosystem, PackageVersionRequest, \
     GetLatestVersionsResponse
 from package_version_check_mcp.utils.version_parser import Version
 

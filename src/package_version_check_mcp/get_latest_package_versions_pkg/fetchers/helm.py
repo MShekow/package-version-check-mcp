@@ -1,19 +1,19 @@
 """Helm chart version fetcher."""
 
-from typing import Optional, List, Dict, Any
-import urllib.parse
-import httpx
-import tempfile
-import os
 import asyncio
-import yaml
+import os
+import tempfile
 import textwrap
+import urllib.parse
+from typing import Optional, List, Dict, Any
 
+import httpx
+import yaml
 from docker_registry_client_async import DockerRegistryClientAsync, ImageName
 
+from .docker import get_docker_image_tags, determine_latest_image_tag
 from ..structs import PackageVersionResult, Ecosystem
 from ...utils.version_parser import Version, InvalidVersion
-from .docker import get_docker_image_tags, determine_latest_image_tag
 
 
 def parse_helm_chart_name(package_name: str) -> tuple[str, str, str]:
@@ -91,9 +91,7 @@ def parse_helm_chart_name(package_name: str) -> tuple[str, str, str]:
         )
 
 
-async def fetch_helm_chart_version(
-    package_name: str, version_hint: Optional[str] = None
-) -> PackageVersionResult:
+async def fetch_helm_chart_version(package_name: str, version_hint: Optional[str] = None) -> PackageVersionResult:
     """Fetch the latest version of a Helm chart.
 
     Supports both ChartMuseum (https://) and OCI (oci://) registries.
@@ -119,7 +117,7 @@ async def fetch_helm_chart_version(
 
 
 async def fetch_helm_chartmuseum_version(
-    registry_url: str, chart_name: str, original_package_name: str
+        registry_url: str, chart_name: str, original_package_name: str
 ) -> PackageVersionResult:
     """Fetch the latest version of a Helm chart from a ChartMuseum-compatible registry.
 
@@ -208,9 +206,8 @@ async def fetch_helm_chartmuseum_version(
                 pass
 
 
-async def fetch_helm_oci_version(
-    registry_url: str, chart_name: str, original_package_name: str, version_hint: Optional[str] = None
-) -> PackageVersionResult:
+async def fetch_helm_oci_version(registry_url: str, chart_name: str, original_package_name: str,
+                                 version_hint: Optional[str] = None) -> PackageVersionResult:
     """Fetch the latest version of a Helm chart from an OCI registry.
 
     Reuses the Docker registry client to query OCI registries.
@@ -325,7 +322,7 @@ def _extract_helm_chart_versions_memory_efficient(yaml_path: str, chart_name: st
 
                 elif state == STATE_WAIT_ENTRIES_VAL:
                     if isinstance(event, yaml.MappingStartEvent):
-                        entries_depth = depth # The depth INSIDE the entries mapping
+                        entries_depth = depth  # The depth INSIDE the entries mapping
                         state = STATE_SEARCH_CHART
 
                 elif state == STATE_SEARCH_CHART:
@@ -339,7 +336,7 @@ def _extract_helm_chart_versions_memory_efficient(yaml_path: str, chart_name: st
                 elif state == STATE_WAIT_CHART_VAL:
                     if isinstance(event, yaml.SequenceStartEvent):
                         start_line = event.start_mark.line
-                        target_seq_depth = depth # The depth INSIDE the sequence
+                        target_seq_depth = depth  # The depth INSIDE the sequence
                         state = STATE_CAPTURE_VALUE
                     else:
                         pass

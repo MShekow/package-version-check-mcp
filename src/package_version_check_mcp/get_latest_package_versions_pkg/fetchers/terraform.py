@@ -1,6 +1,7 @@
 """Terraform provider and module version fetchers."""
 
 from typing import Callable
+
 import httpx
 
 from ..structs import PackageVersionResult, Ecosystem
@@ -91,12 +92,8 @@ def parse_terraform_module_name(package_name: str) -> tuple[str, str, str, str]:
     return registry, namespace, module_name, provider
 
 
-async def _fetch_terraform_registry_version(
-    url: str,
-    package_name: str,
-    ecosystem: Ecosystem,
-    extract_versions: Callable[[dict], list],
-) -> PackageVersionResult:
+async def _fetch_terraform_registry_version(url: str, package_name: str, ecosystem: Ecosystem,
+                                            extract_versions: Callable[[dict], list], ) -> PackageVersionResult:
     """Shared helper for fetching module or provider versions from a Terraform registry.
 
     Args:

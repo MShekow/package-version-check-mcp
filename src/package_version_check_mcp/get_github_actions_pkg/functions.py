@@ -4,12 +4,10 @@ import httpx
 import yaml
 
 from .structs import GitHubActionResult, GitHubActionError
-from ..get_latest_versions_pkg.utils.github import fetch_latest_github_tag, create_github_client
+from ..get_latest_package_versions_pkg.utils.github import fetch_latest_github_tag, create_github_client
 
 
-async def fetch_github_action_metadata(
-    owner: str, repo: str, tag: str, client: httpx.AsyncClient
-) -> dict[str, Any]:
+async def fetch_github_action_metadata(owner: str, repo: str, tag: str, client: httpx.AsyncClient) -> dict[str, Any]:
     """Fetch the action.yml metadata for a GitHub action.
 
     Args:
@@ -53,9 +51,7 @@ async def fetch_github_action_metadata(
     raise ValueError(f"No action.yml or action.yaml found for {owner}/{repo}@{tag}")
 
 
-async def fetch_github_action_readme(
-    owner: str, repo: str, tag: str, client: httpx.AsyncClient
-) -> Optional[str]:
+async def fetch_github_action_readme(owner: str, repo: str, tag: str, client: httpx.AsyncClient) -> Optional[str]:
     """Fetch the README.md for a GitHub action.
 
     Args:
@@ -82,9 +78,7 @@ async def fetch_github_action_readme(
         raise
 
 
-async def fetch_github_action(
-    action_name: str, include_readme: bool = False
-) -> GitHubActionResult | GitHubActionError:
+async def fetch_github_action(action_name: str, include_readme: bool = False) -> GitHubActionResult | GitHubActionError:
     """Fetch information about a GitHub action.
 
     Args:

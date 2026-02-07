@@ -15,12 +15,12 @@ from starlette.responses import JSONResponse
 from package_version_check_mcp.get_github_actions_pkg.functions import fetch_github_action
 from package_version_check_mcp.get_github_actions_pkg.structs import GitHubActionResult, GitHubActionError, \
     GetGitHubActionVersionsResponse
-from package_version_check_mcp.get_latest_versions_pkg import fetch_package_version
-from package_version_check_mcp.get_latest_versions_pkg.structs import PackageVersionRequest, \
-    PackageVersionResult, PackageVersionError, GetLatestVersionsResponse
 from package_version_check_mcp.get_latest_tools_pkg.functions import fetch_latest_tool_version
 from package_version_check_mcp.get_latest_tools_pkg.structs import LatestToolResult, LatestToolError, \
     GetLatestToolVersionsResponse
+from package_version_check_mcp.get_latest_package_versions_pkg import fetch_package_version
+from package_version_check_mcp.get_latest_package_versions_pkg.structs import PackageVersionRequest, \
+    PackageVersionResult, PackageVersionError, GetLatestVersionsResponse
 
 mcp = FastMCP("Package Version Check")
 
@@ -32,12 +32,12 @@ async def health_check(request: Request) -> JSONResponse:
 
 
 @mcp.tool()
-async def get_latest_package_versions(
-    packages: list[PackageVersionRequest],
-) -> GetLatestVersionsResponse:
+async def get_latest_package_versions(packages: list[PackageVersionRequest]) -> GetLatestVersionsResponse:
     """Get the latest versions of packages from various ecosystems.
 
-    This tool fetches the latest version information for packages from NPM, PyPI, NuGet, Maven/Gradle, Go modules, PHP/Packagist, Ruby gems, Rust crates, Swift packages, Dart packages, Docker, Helm, Terraform modules and Terraform providers.
+    This tool fetches the latest version information for packages from NPM, PyPI, NuGet, Maven/Gradle, Go modules,
+    PHP/Packagist, Ruby gems, Rust crates, Swift packages, Dart packages, Docker, Helm, Terraform modules
+    and Terraform providers.
     It returns both successful lookups and any errors that occurred.
 
     Args:
@@ -112,9 +112,8 @@ async def get_latest_package_versions(
 
 
 @mcp.tool()
-async def get_github_action_versions_and_args(
-    action_names: list[str], include_readme: bool = False
-) -> GetGitHubActionVersionsResponse:
+async def get_github_action_versions_and_args(action_names: list[str],
+                                              include_readme: bool = False) -> GetGitHubActionVersionsResponse:
     """Get the latest versions and metadata for GitHub Actions.
 
     This tool fetches the latest Git tag and action.yml metadata for GitHub Actions
@@ -187,9 +186,7 @@ async def get_supported_tools() -> list[str]:
 
 
 @mcp.tool()
-async def get_latest_tool_versions(
-    tool_names: list[str],
-) -> GetLatestToolVersionsResponse:
+async def get_latest_tool_versions(tool_names: list[str]) -> GetLatestToolVersionsResponse:
     """Get the latest stable versions of tools supported by mise-en-place.
 
     This tool fetches the latest stable version of development and DevOps tools
