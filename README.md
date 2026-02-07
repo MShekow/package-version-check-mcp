@@ -124,29 +124,6 @@ Fetches the latest versions of packages from various ecosystems.
   - `package_name`: The package name (as provided)
   - `error`: Description of the error
 
-**Example:**
-```json
-{
-  "packages": [
-    {"ecosystem": "npm", "package_name": "express"},
-    {"ecosystem": "pypi", "package_name": "requests"},
-    {"ecosystem": "nuget", "package_name": "Newtonsoft.Json"},
-    {"ecosystem": "maven_gradle", "package_name": "org.springframework:spring-core"},
-    {"ecosystem": "go", "package_name": "github.com/gin-gonic/gin"},
-    {"ecosystem": "php", "package_name": "monolog/monolog"},
-    {"ecosystem": "rubygems", "package_name": "rails"},
-    {"ecosystem": "rust", "package_name": "serde"},
-    {"ecosystem": "swift", "package_name": "https://github.com/Alamofire/Alamofire.git"},
-    {"ecosystem": "dart", "package_name": "http"},
-    {"ecosystem": "docker", "package_name": "index.docker.io/library/alpine", "version": "3.19-alpine"},
-    {"ecosystem": "helm", "package_name": "https://charts.bitnami.com/bitnami/nginx"},
-    {"ecosystem": "helm", "package_name": "oci://ghcr.io/argoproj/argo-helm/argo-cd"},
-    {"ecosystem": "terraform_provider", "package_name": "hashicorp/aws"},
-    {"ecosystem": "terraform_module", "package_name": "terraform-aws-modules/vpc/aws"}
-  ]
-}
-```
-
 #### `get_github_action_versions_and_args`
 
 Fetches the latest versions and metadata for GitHub Actions hosted on github.com.
@@ -168,14 +145,6 @@ Fetches the latest versions and metadata for GitHub Actions hosted on github.com
   - `name`: The action name (as provided)
   - `error`: Description of the error
 
-**Example:**
-```json
-{
-  "action_names": ["actions/checkout", "actions/setup-python"],
-  "include_readme": false
-}
-```
-
 #### `get_supported_tools`
 
 Returns a list of all tool names supported by the `get_latest_tool_versions` MCP tool.
@@ -187,18 +156,6 @@ This tool queries the `mise` registry to retrieve all available tool names that 
 
 **Output:**
 - Array of tool short names (e.g., ["1password", "act", "node", "python", ...])
-
-**Example:**
-```json
-{}
-```
-
-**Example Response:**
-```json
-{
-  "result": ["1password", "1password-cli", "aapt2", "act", "action-validator", "actionlint", "node", "python", ...]
-}
-```
 
 #### `get_latest_tool_versions`
 
@@ -227,25 +184,6 @@ To see all available tools, use the `get_supported_tools` tool.
 - `lookup_errors`: Array of errors with:
   - `tool_name`: The tool name (as provided)
   - `error`: Description of the error
-
-**Example:**
-```json
-{
-  "tool_names": ["terraform", "gradle", "kubectl"]
-}
-```
-
-**Example Response:**
-```json
-{
-  "result": [
-    {"tool_name": "terraform", "latest_version": "1.14.4"},
-    {"tool_name": "gradle", "latest_version": "8.5"},
-    {"tool_name": "kubectl", "latest_version": "1.28.0"}
-  ],
-  "lookup_errors": []
-}
-```
 
 ## Why build yet another MCP
 
