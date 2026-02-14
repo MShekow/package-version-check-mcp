@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Note:** There is an automatic release GitHub workflow which regularly pushes new _patch-level_ (x.y.**z**) releases to PyPI and GHCR, whenever there are updates for the underlying dependencies used by this MCP. These patch versions do _not_ appear in this changelog!
 
+## [1.2.0] - 2026-02-14
+
+### Changed
+- **GitHub tags handling**: The routine that determines the latest version of GitHub.com tags now looks at _all_ tags. It no longer relies on the order returned by the API, assuming that the first entry is the latest one. This fixes getting the latest version for actions such as `anothrNick/github-tag-action` where `1.75.0` is correct, not `v1`
+
 ## [1.1.0] - 2026-02-07
 
 ### Changed

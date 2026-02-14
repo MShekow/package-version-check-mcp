@@ -1,6 +1,6 @@
 [project]
 name = "package-version-check-mcp"
-version = "1.1.0"
+version = "1.2.0"
 description = "A MCP server that returns the current, up-to-date version of packages you use as dependencies in a variety of ecosystems, such as Python, NPM, Go, or GitHub Actions"
 authors = [
     {name = "Marius Shekow"}

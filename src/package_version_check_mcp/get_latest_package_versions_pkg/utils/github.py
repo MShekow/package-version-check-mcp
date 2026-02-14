@@ -31,18 +31,28 @@ async def fetch_latest_github_tag(owner: str, repo: str, client: httpx.AsyncClie
     if not tags:
         raise ValueError(f"No tags found for {owner}/{repo}")
 
-    # Default to the first tag if no stable version is found
-    # This keeps specific behavior for repos that might only use prereleases or non-semver tags
+    # Default to the first tag if no valid version is found
     target_tag = tags[0]
 
+    # Parse all valid versions
+    valid_versions = []
     for tag in tags:
         try:
             version = Version(tag["name"])
-            if not version.is_prerelease:
-                target_tag = tag
-                break
+            valid_versions.append((version, tag))
         except (InvalidVersion, ValueError):
             continue
+
+    if valid_versions:
+        # Separate stable and prerelease versions
+        stable_versions = [(v, t) for v, t in valid_versions if not v.is_prerelease]
+        
+        if stable_versions:
+            # Find the latest stable version
+            _, target_tag = max(stable_versions, key=lambda x: x[0])
+        else:
+            # No stable versions, use the latest overall version
+            _, target_tag = max(valid_versions, key=lambda x: x[0])
 
     tag_name = target_tag["name"]
     commit_sha = target_tag["commit"]["sha"]
