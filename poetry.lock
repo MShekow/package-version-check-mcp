@@ -858,14 +858,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fastmcp"
-version = "3.2.2"
+version = "3.2.3"
 description = "The fast, Pythonic way to build MCP servers and clients."
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "fastmcp-3.2.2-py3-none-any.whl", hash = "sha256:9d2fe9731bbae43e6979a0bf7194bd076fd014f780c118edfdc52645b9adbe5b"},
-    {file = "fastmcp-3.2.2.tar.gz", hash = "sha256:a5351ec8c098844a8d508a53e484b362f5357b890596aaf233ac9686a796a62f"},
+    {file = "fastmcp-3.2.3-py3-none-any.whl", hash = "sha256:cc50af6eed1f62ed8b6ebf4987286d8d1d006f08d5bec739d5c7fb76160e0911"},
+    {file = "fastmcp-3.2.3.tar.gz", hash = "sha256:4f02ae8b00227285a0cf6544dea1db29b022c8cdd8d3dfdec7118540210ae60a"},
 ]
 
 [package.dependencies]
@@ -898,7 +898,7 @@ azure = ["azure-identity (>=1.16.0)", "pyjwt (>=2.12.0)"]
 code-mode = ["pydantic-monty (==0.0.9)"]
 gemini = ["google-genai (>=1.18.0)"]
 openai = ["openai (>=1.102.0)"]
-tasks = ["pydocket (>=0.18.0)"]
+tasks = ["fakeredis[lua] (<2.35.0)", "pydocket (>=0.18.0)"]
 
 [[package]]
 name = "frozenlist"
@@ -3271,4 +3271,4 @@ dev = ["pytest", "pytest-asyncio", "pytest-mock", "testcontainers"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "0e87054faa1998b1181ddb24694f24c6fd02be6040ed0ab7bb6be1ed38e83dd8"
+content-hash = "f185ada03591dbfd39b4d586e49bf1e641b713c3ba30b61173e2e4967d7f49d1"
