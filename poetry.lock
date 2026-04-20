@@ -293,14 +293,14 @@ test-tox-coverage = ["coverage (>=5.5)"]
 
 [[package]]
 name = "cachetools"
-version = "7.0.5"
+version = "7.0.6"
 description = "Extensible memoizing collections and decorators"
 optional = false
 python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "cachetools-7.0.5-py3-none-any.whl", hash = "sha256:46bc8ebefbe485407621d0a4264b23c080cedd913921bad7ac3ed2f26c183114"},
-    {file = "cachetools-7.0.5.tar.gz", hash = "sha256:0cd042c24377200c1dcd225f8b7b12b0ca53cc2c961b43757e774ebe190fd990"},
+    {file = "cachetools-7.0.6-py3-none-any.whl", hash = "sha256:4e94956cfdd3086f12042cdd29318f5ced3893014f7d0d059bf3ead3f85b7f8b"},
+    {file = "cachetools-7.0.6.tar.gz", hash = "sha256:e5d524d36d65703a87243a26ff08ad84f73352adbeafb1cde81e207b456aaf24"},
 ]
 
 [[package]]
@@ -3305,4 +3305,4 @@ dev = ["pytest", "pytest-asyncio", "pytest-mock", "testcontainers"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "b427ac8b3eef1cd69698b65ee2f8d881ac88de3a2f027721097c60e831813b98"
+content-hash = "13a117df5c5ffb5b7ca9aa37f36f040aa8e64edc755ba30b33ddb5296067fd8a"
