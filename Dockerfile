@@ -28,7 +28,7 @@ FROM alpine/curl:latest AS mise-downloader
 # Note: TARGETARCH is e.g. arm64 or amd64
 ARG TARGETARCH
 # renovate-docker-env: datasource=github-releases depName=jdx/mise
-ENV MISE_VERSION=v2026.5.10
+ENV MISE_VERSION=v2026.5.11
 RUN apk add --no-cache tar zstd && \
     MISE_ARCH=$([ "$TARGETARCH" = "amd64" ] && echo "x64" || echo "$TARGETARCH") && \
     curl -fsSL https://github.com/jdx/mise/releases/download/${MISE_VERSION}/mise-${MISE_VERSION}-linux-${MISE_ARCH}.tar.zst -o /tmp/mise.tar.zst && \
