@@ -20,7 +20,8 @@ async def fetch_rust_version(package_name: str) -> PackageVersionResult:
     """
     url = f"https://crates.io/api/v1/crates/{package_name}"
 
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with httpx.AsyncClient(timeout=10.0,
+                                 headers={"User-Agent": "Mozilla/5.0"}) as client:
         response = await client.get(url)
         response.raise_for_status()
         data = response.json()
