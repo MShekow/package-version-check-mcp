@@ -37,7 +37,7 @@ packages = [{include = "package_version_check_mcp", from = "src"}]
 
 [project.optional-dependencies]
 dev = [
-    "pytest==9.0.3",
+    "pytest==9.1.0",
     "pytest-asyncio==1.4.0",
     "testcontainers==4.14.2",
     "pytest-mock==3.15.1"
