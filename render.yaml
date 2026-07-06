@@ -18,3 +18,5 @@ services:
         value: "64"
       - key: GITHUB_PAT
         sync: false  # we have to set this manually in the Render dashboard
+      - key: FASTMCP_HTTP_ALLOWED_HOSTS  # must be set since FastMCP v3.4.3 to make endpoints reachable
+        sync: false  # we have to set this manually in the Render dashboard, e.g. to '["foo.onrender.com"]'
