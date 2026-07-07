@@ -37,5 +37,13 @@
       "username": "{{ secrets.DHI_USERNAME }}",
       "password": "{{ secrets.DHI_PASSWORD }}"
     }
+  ],
+  "packageRules": [
+    {
+      "description": "Don't create PRs for Python installed by actions/setup-python GitHub workflow step",
+      "matchPackageNames": ["actions/python-versions"],
+      "matchDepTypes": ["uses-with"],
+      "enabled": false
+    }
   ]
 }
