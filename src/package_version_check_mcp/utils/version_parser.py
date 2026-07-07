@@ -38,18 +38,6 @@ CmpKey = Tuple[
 ]
 
 
-def parse(version: str) -> Version:
-    """Parse the given version string.
-
-    >>> parse('1.0.dev1')
-    <Version('1.0.dev1')>
-
-    :param version: The version string to parse.
-    :raises InvalidVersion: When the version string is not a valid version.
-    """
-    return Version(version)
-
-
 class InvalidVersion(ValueError):
     """Raised when a version string is not a valid version.
 
@@ -76,13 +64,13 @@ class _BaseVersion:
     # Please keep the duplicated `isinstance` check
     # in the six comparisons hereunder
     # unless you find a way to avoid adding overhead function calls.
-    def __lt__(self, other: _BaseVersion) -> bool:
+    def __lt__(self, other: "_BaseVersion") -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
 
         return self._key < other._key
 
-    def __le__(self, other: _BaseVersion) -> bool:
+    def __le__(self, other: "_BaseVersion") -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
 
@@ -94,13 +82,13 @@ class _BaseVersion:
 
         return self._key == other._key
 
-    def __ge__(self, other: _BaseVersion) -> bool:
+    def __ge__(self, other: "_BaseVersion") -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
 
         return self._key >= other._key
 
-    def __gt__(self, other: _BaseVersion) -> bool:
+    def __gt__(self, other: "_BaseVersion") -> bool:
         if not isinstance(other, _BaseVersion):
             return NotImplemented
 
@@ -493,3 +481,15 @@ def _cmpkey(
         _variant = variant
 
     return _release, _pre, _post, _dev, _variant
+
+
+def parse(version: str) -> Version:
+    """Parse the given version string.
+
+    >>> parse('1.0.dev1')
+    <Version('1.0.dev1')>
+
+    :param version: The version string to parse.
+    :raises InvalidVersion: When the version string is not a valid version.
+    """
+    return Version(version)
