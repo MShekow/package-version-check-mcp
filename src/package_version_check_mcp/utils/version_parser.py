@@ -10,7 +10,7 @@ Taken from packaging.version module with various modifications:
 
 import re
 import typing
-from typing import Any, SupportsInt, Tuple, Union
+from typing import Any, Optional, SupportsInt, Tuple, Union
 
 from ._structures import Infinity, InfinityType, NegativeInfinity, NegativeInfinityType
 
@@ -166,12 +166,12 @@ class Version(_BaseVersion):
     _regex = re.compile(r"\s*" + VERSION_PATTERN + r"\s*", re.VERBOSE | re.IGNORECASE)
 
     _release: tuple[int, ...]
-    _dev: tuple[str, int] | None
-    _pre: tuple[str, int] | None
-    _post: tuple[str, int] | None
-    _variant: str | None
+    _dev: Optional[tuple[str, int]]
+    _pre: Optional[tuple[str, int]]
+    _post: Optional[tuple[str, int]]
+    _variant: Optional[str]
 
-    _key_cache: CmpKey | None
+    _key_cache: Optional[CmpKey]
 
     def __init__(self, version: str) -> None:
         """Initialize a Version object.
@@ -269,7 +269,7 @@ class Version(_BaseVersion):
         return self._release
 
     @property
-    def pre(self) -> tuple[str, int] | None:
+    def pre(self) -> Optional[tuple[str, int]]:
         """The pre-release segment of the version.
 
         >>> print(Version("1.2.3").pre)
@@ -284,7 +284,7 @@ class Version(_BaseVersion):
         return self._pre
 
     @property
-    def post(self) -> int | None:
+    def post(self) -> Optional[int]:
         """The post-release number of the version.
 
         >>> print(Version("1.2.3").post)
@@ -295,7 +295,7 @@ class Version(_BaseVersion):
         return self._post[1] if self._post else None
 
     @property
-    def dev(self) -> int | None:
+    def dev(self) -> Optional[int]:
         """The development number of the version.
 
         >>> print(Version("1.2.3").dev)
@@ -306,7 +306,7 @@ class Version(_BaseVersion):
         return self._dev[1] if self._dev else None
 
     @property
-    def variant(self) -> str | None:
+    def variant(self) -> Optional[str]:
         """The variant of the version.
 
         >>> print(Version("1.2.3").variant)
@@ -409,8 +409,8 @@ class Version(_BaseVersion):
 
 
 def _parse_letter_version(
-        letter: str | None, number: str | bytes | SupportsInt | None
-) -> tuple[str, int] | None:
+        letter: Optional[str], number: Optional[Union[str, bytes, SupportsInt]]
+) -> Optional[tuple[str, int]]:
     if letter:
         # We normalize any letters to their lower case form
         letter = letter.lower()
@@ -434,10 +434,10 @@ def _parse_letter_version(
 
 def _cmpkey(
         release: tuple[int, ...],
-        pre: tuple[str, int] | None,
-        post: tuple[str, int] | None,
-        dev: tuple[str, int] | None,
-        variant: str | None,
+        pre: Optional[tuple[str, int]],
+        post: Optional[tuple[str, int]],
+        dev: Optional[tuple[str, int]],
+        variant: Optional[str],
 ) -> CmpKey:
     # When we compare a release version, we want to compare it with all of the
     # trailing zeros removed. We will use this for our sorting key.

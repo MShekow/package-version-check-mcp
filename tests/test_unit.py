@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import pytest
 from package_version_check_mcp.get_latest_package_versions_pkg.fetchers.docker import determine_latest_image_tag
@@ -14,19 +15,19 @@ from package_version_check_mcp.utils.version_parser import Version, InvalidVersi
 class ExpectedVersion:
     """Expected values for version parsing tests."""
     release: tuple[int, ...]
-    major: int | None = None
-    minor: int | None = None
-    micro: int | None = None
-    pre: tuple[str, int] | None = None
-    post: int | None = None
-    dev: int | None = None
-    variant: str | None = None
+    major: Optional[int] = None
+    minor: Optional[int] = None
+    micro: Optional[int] = None
+    pre: Optional[tuple[str, int]] = None
+    post: Optional[int] = None
+    dev: Optional[int] = None
+    variant: Optional[str] = None
     is_prerelease: bool = False
     is_postrelease: bool = False
     is_devrelease: bool = False
-    str: str | None = None
-    public: str | None = None
-    base_version: str | None = None
+    str: Optional[str] = None
+    public: Optional[str] = None
+    base_version: Optional[str] = None
 
 
 @pytest.mark.parametrize(
