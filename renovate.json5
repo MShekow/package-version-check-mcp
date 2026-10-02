@@ -23,6 +23,16 @@
       "matchStrings": [
         "# renovate-docker-env: datasource=(?<datasource>[a-z-]+?)(?: depName=(?<depName>.+?))(?: versioning=(?<versioning>[a-z-]+?))?(?: extractVersion=(?<extractVersion>.+?))?\\s(?:ENV|ARG) .+?_VERSION=(?<currentValue>.+?)\\s"
       ]
+    },
+    {
+      "customType": "regex",
+      "description": "Update annotated Cosign release in the CI-CD workflow",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci-cd\\.yml$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+) versioning=(?<versioning>[a-z-]+)\\s+cosign-release: ['\"](?<currentValue>[^'\"\\s]+)['\"]"
+      ]
     }
   ],
   "registryAliases": {
@@ -44,6 +54,13 @@
       "matchPackageNames": ["actions/python-versions"],
       "matchDepTypes": ["uses-with"],
       "enabled": false
+    },
+    {
+      "description": "Automatically update Cosign without PRs or status checks",
+      "matchPackageNames": ["sigstore/cosign"],
+      "automerge": true,
+      "automergeType": "branch",
+      "ignoreTests": true
     }
   ]
 }
