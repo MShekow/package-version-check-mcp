@@ -17,7 +17,12 @@ async def fetch_go_version(package_name: str) -> PackageVersionResult:
     Raises:
         Exception: If the package cannot be found or fetched
     """
-    url = f"https://proxy.golang.org/{package_name}/@latest"
+    # GOPROXY case-encodes ASCII uppercase letters as '!' followed by lowercase.
+    escaped_package_name = "".join(
+        f"!{char.lower()}" if "A" <= char <= "Z" else char
+        for char in package_name
+    )
+    url = f"https://proxy.golang.org/{escaped_package_name}/@latest"
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(url)
