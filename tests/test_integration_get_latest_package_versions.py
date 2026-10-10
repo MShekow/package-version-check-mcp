@@ -43,6 +43,7 @@ async def mcp_client():
     (Ecosystem.TerraformModule, "registry.terraform.io/Azure/network/azurerm", "5.3.0"),
     (Ecosystem.Go, "github.com/gin-gonic/gin", "v1.11.0"),
     (Ecosystem.Go, "github.com/google/uuid", "v1.6.0"),
+    (Ecosystem.Go, "github.com/BurntSushi/toml", "v1.6.0"),
     (Ecosystem.PHP, "monolog/monolog", "3.10.0"),
     (Ecosystem.PHP, "laravel/framework", "v12.49.0"),
     (Ecosystem.PHP, "symfony/console", "v8.0.4"),

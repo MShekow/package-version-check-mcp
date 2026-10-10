@@ -2,13 +2,54 @@ from dataclasses import dataclass
 from typing import Optional
 
 import pytest
+import httpx
 from package_version_check_mcp.get_latest_package_versions_pkg.fetchers.docker import determine_latest_image_tag
+from package_version_check_mcp.get_latest_package_versions_pkg.fetchers.go import fetch_go_version
 from package_version_check_mcp.get_latest_package_versions_pkg.fetchers.maven import parse_maven_package_name
 from package_version_check_mcp.get_latest_package_versions_pkg.fetchers.terraform import (
     parse_terraform_provider_name,
     parse_terraform_module_name,
 )
 from package_version_check_mcp.utils.version_parser import Version, InvalidVersion
+
+
+@pytest.mark.parametrize("package_name,expected_url", [
+    (
+        "github.com/BurntSushi/toml",
+        "https://proxy.golang.org/github.com/!burnt!sushi/toml/@latest",
+    ),
+    (
+        "github.com/gin-gonic/gin",
+        "https://proxy.golang.org/github.com/gin-gonic/gin/@latest",
+    ),
+    (
+        "example.com/Owner/MyModule/v2",
+        "https://proxy.golang.org/example.com/!owner/!my!module/v2/@latest",
+    ),
+])
+async def test_fetch_go_version_proxy_path_encoding(mocker, package_name, expected_url):
+    """Send GOPROXY case-encoded paths while retaining the canonical module name."""
+    def handle_request(request):
+        assert request.method == "GET"
+        assert str(request.url) == expected_url
+        return httpx.Response(200, json={
+            "Version": "v2.3.4",
+            "Time": "2026-01-01T00:00:00Z",
+            "Origin": {"Hash": "abc123"},
+        })
+
+    client = httpx.AsyncClient(transport=httpx.MockTransport(handle_request))
+    mocker.patch(
+        "package_version_check_mcp.get_latest_package_versions_pkg.fetchers.go.httpx.AsyncClient",
+        return_value=client,
+    )
+
+    result = await fetch_go_version(package_name)
+
+    assert result.package_name == package_name
+    assert result.latest_version == "v2.3.4"
+    assert result.published_on == "2026-01-01T00:00:00Z"
+    assert result.digest == "abc123"
 
 
 @dataclass
