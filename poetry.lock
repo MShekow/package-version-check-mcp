@@ -968,39 +968,39 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "fastmcp"
-version = "4.2.1"
+version = "4.2.3"
 description = "The fast, Pythonic way to build MCP servers and clients."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "fastmcp-4.2.1-py3-none-any.whl", hash = "sha256:4f3f92d3a00011aea164092628ef28f3db471138f1179f756b1a1949cd6d876b"},
-    {file = "fastmcp-4.2.1.tar.gz", hash = "sha256:06458edbb093e4d4ec42c99be5b65237df41648e6a2b7b3f54c5b45d561a7009"},
+    {file = "fastmcp-4.2.3-py3-none-any.whl", hash = "sha256:82fde5c1db2a6d865015726b15502a2657205e4549295dc1357fcb7b1c521a4d"},
+    {file = "fastmcp-4.2.3.tar.gz", hash = "sha256:0c9d1739d59e89506489bea589dec6193d204ab86e9739333d6bb46c13476477"},
 ]
 
 [package.dependencies]
-fastmcp-slim = {version = "4.2.1", extras = ["client", "server"]}
+fastmcp-slim = {version = "4.2.3", extras = ["client", "server"]}
 
 [package.extras]
-anthropic = ["fastmcp-slim[anthropic] (==4.2.1)"]
-apps = ["fastmcp-slim[apps] (==4.2.1)"]
-azure = ["fastmcp-slim[azure] (==4.2.1)"]
-code-mode = ["fastmcp-slim[code-mode] (==4.2.1)"]
-gemini = ["fastmcp-slim[gemini] (==4.2.1)"]
-jev = ["fastmcp-slim[jev] (==4.2.1)"]
-openai = ["fastmcp-slim[openai] (==4.2.1)"]
-tasks = ["fastmcp-tasks (==4.2.1)"]
+anthropic = ["fastmcp-slim[anthropic] (==4.2.3)"]
+apps = ["fastmcp-slim[apps] (==4.2.3)"]
+azure = ["fastmcp-slim[azure] (==4.2.3)"]
+code-mode = ["fastmcp-slim[code-mode] (==4.2.3)"]
+gemini = ["fastmcp-slim[gemini] (==4.2.3)"]
+jev = ["fastmcp-slim[jev] (==4.2.3)"]
+openai = ["fastmcp-slim[openai] (==4.2.3)"]
+tasks = ["fastmcp-tasks (==4.2.3)"]
 
 [[package]]
 name = "fastmcp-slim"
-version = "4.2.1"
+version = "4.2.3"
 description = "The dependency-slim FastMCP package."
 optional = false
 python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "fastmcp_slim-4.2.1-py3-none-any.whl", hash = "sha256:2523b2eec4886959426c9c6ca7d5f3ad978b9d7b037a2dabd912eb6f729cc429"},
-    {file = "fastmcp_slim-4.2.1.tar.gz", hash = "sha256:bcbe48b0eeb8bb32b616d7b329832f5d03d16db02807a58457f5e2e44d1d0def"},
+    {file = "fastmcp_slim-4.2.3-py3-none-any.whl", hash = "sha256:6d68766ad18d5966230d7216c1e070325ffc547a3c8bc49172174f6c42ea617d"},
+    {file = "fastmcp_slim-4.2.3.tar.gz", hash = "sha256:9037cd8c0a2804152102f559f8f6a9c615377b6aeb9d2b6a466c0afe9df5839b"},
 ]
 
 [package.dependencies]
@@ -3451,4 +3451,4 @@ dev = ["pytest", "pytest-asyncio", "pytest-mock", "testcontainers"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "d563b2391656a86a298c74cb282911170332ef4a907fa369fe08787e8903c57f"
+content-hash = "2e2ca25bc745b1361442f00c13a65250fba86731d09e8d91433ce108177391f8"
