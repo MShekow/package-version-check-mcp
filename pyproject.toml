@@ -18,7 +18,7 @@ classifiers = [
 dependencies = [
     "fastmcp==4.2.4",
     "httpx==0.28.1",
-    "pyyaml==6.0.3",
+    "pyyaml==6.0.4",
     "docker-registry-client-async==1.0.3",
     "cachetools==8.0.2"
 ]
