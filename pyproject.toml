@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "fastmcp==4.2.5",
+    "fastmcp==4.2.6",
     "httpx==0.28.1",
     "pyyaml==6.0.4",
     "docker-registry-client-async==1.0.3",
