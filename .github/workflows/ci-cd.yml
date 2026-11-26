@@ -133,7 +133,7 @@ jobs:
         uses: sigstore/cosign-installer@v4.1.4
         with:
           # renovate: datasource=github-tags depName=sigstore/cosign versioning=semver
-          cosign-release: 'v3.1.5'
+          cosign-release: 'v3.1.6'
 
       - name: Sign image
         run: |
